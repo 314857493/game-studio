@@ -2,10 +2,9 @@
 
 One row per system. Add the row in the same pull request that adds the design doc. The vision lives in [vision.md](vision.md); every row should serve one of its pillars.
 
-| System | Owner | Status | Doc |
-|---|---|---|---|
-| _Player controller_ | gameplay-programmer | draft | design/player-controller.md |
-| _Combat loop_ | game-designer | in review | design/combat.md |
+| System | Owner | Status | Doc | Summary | Depends on |
+|---|---|---|---|---|---|
+| Sokoban core | game-designer | in review | design/sokoban-core.md | Classic crate-pushing on a grid with a fixed-camera 3D presentation, practically unlimited undo, and a 12-level sequence. | No system yet; the vision pillars and the camera/level pipeline are open questions. |
 
 Status values:
 
