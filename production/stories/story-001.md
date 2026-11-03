@@ -1,6 +1,6 @@
 ---
 id: story-001
-status: ready
+status: done
 updated: 2026-11-03
 ---
 
@@ -19,21 +19,21 @@ sockets for goals. Camera sits at a fixed 40° pitch with yaw 0 over the level.
 
 ## Acceptance
 
-- [ ] The level loads from `assets/data/levels/level-001.json` (one 9x9 grid, walls,
+- [x] The level loads from `assets/data/levels/level-001.json` (one 9x9 grid, walls,
       floor, goals, crates, one player spawn) through a single loader function, and the
       loader rejects invalid data with the level id in the error: crate count differs
       from goal count, no player spawn, two objects on one cell.
-- [ ] Pressing a direction key moves the player exactly one cell into an empty floor or
+- [x] Pressing a direction key moves the player exactly one cell into an empty floor or
       goal cell, and the move counter increases by one.
-- [ ] Pressing a direction key toward a crate whose far cell is empty moves the player
+- [x] Pressing a direction key toward a crate whose far cell is empty moves the player
       one cell, moves the crate one cell, and increases both the move and push counters.
-- [ ] Pressing a direction key toward a wall, or toward a crate whose far cell is blocked
+- [x] Pressing a direction key toward a wall, or toward a crate whose far cell is blocked
       (wall, crate, or grid edge), changes no cell and no counter, but the player still
       turns to face that direction.
-- [ ] The board renders in 3D in one frame at 1152x648: floor, walls, goals, crates and
+- [x] The board renders in 3D in one frame at 1152x648: floor, walls, goals, crates and
       the player are all distinguishable, and a goal under a crate reads differently from
       an empty goal.
-- [ ] `python scripts/studio.py check` and `python scripts/studio.py test` both exit 0,
+- [x] `python scripts/studio.py check` and `python scripts/studio.py test` both exit 0,
       and the headless tests cover the three loader rejections plus R4, R5 and R6.
 
 ## Out of scope
@@ -46,3 +46,7 @@ sockets for goals. Camera sits at a fixed 40° pitch with yaw 0 over the level.
 ## Evidence
 
 - `production/qa/evidence/story-001/index.md`
+- `production/qa/evidence/story-001/story-001-1.png`
+- `production/qa/evidence/story-001/check.log`
+- `production/qa/evidence/story-001/test.log`
+- `production/qa/evidence/story-001/capture.log`

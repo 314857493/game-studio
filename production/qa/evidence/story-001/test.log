@@ -1,0 +1,80 @@
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . --import
+[test] project: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . -s res://tests/run_tests.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: level-001 loads through the loader
+PASS: level-001 keeps its id
+PASS: level-001 is a 9x9 grid
+PASS: level-001 has three crates
+PASS: level-001 has three goals
+PASS: level-001 spawns the player on floor
+PASS: level-001 starts with one crate on a goal for the board readout
+ERROR: level 'bad-count': crate count 2 does not match goal count 3
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:182)
+       [1] _fail (res://src/level_loader.gd:186)
+       [2] _parse (res://src/level_loader.gd:54)
+       [3] load_level (res://src/level_loader.gd:36)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:78)
+       [5] _init (res://tests/run_tests.gd:26)
+PASS: bad-count.json is rejected
+PASS: bad-count.json error names the level id
+PASS: bad-count.json error explains the failure
+ERROR: level 'bad-no-player': no player spawn
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:182)
+       [1] _read_player (res://src/level_loader.gd:118)
+       [2] _parse (res://src/level_loader.gd:49)
+       [3] load_level (res://src/level_loader.gd:36)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:78)
+       [5] _init (res://tests/run_tests.gd:26)
+PASS: bad-no-player.json is rejected
+PASS: bad-no-player.json error names the level id
+PASS: bad-no-player.json error explains the failure
+ERROR: level 'bad-overlap': player and crate share cell (2, 2)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:182)
+       [1] _read_player (res://src/level_loader.gd:125)
+       [2] _parse (res://src/level_loader.gd:49)
+       [3] load_level (res://src/level_loader.gd:36)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:78)
+       [5] _init (res://tests/run_tests.gd:26)
+PASS: bad-overlap.json is rejected
+PASS: bad-overlap.json error names the level id
+PASS: bad-overlap.json error explains the failure
+PASS: R4: a free move succeeds
+PASS: R4: the player moves exactly one cell right
+PASS: R4: the move counter increments and pushes stay zero
+PASS: R4: the player faces the move direction
+PASS: R4: a goal cell is walkable
+PASS: R4: the player may stand on a goal
+PASS: R5: a push succeeds when the far cell is empty
+PASS: R5: the player enters the crate's old cell
+PASS: R5: the crate moves exactly one cell
+PASS: R5: move and push counters each increment
+PASS: R6: moving into a wall is refused
+PASS: R6: a wall leaves the player cell unchanged
+PASS: R6: a wall changes no counter
+PASS: R6: a wall still turns the player
+PASS: R6: a crate pushed toward a wall is refused
+PASS: R6: a blocked push moves no cell and changes no counter
+PASS: R6: a crate pushed toward another crate is refused
+PASS: R6: a blocked crate push changes no counter
+PASS: R6: a crate pushed toward the grid edge is refused
+PASS: R6: a grid edge leaves the cell but still turns
+PASS: scenes/main.tscn exists
+PASS: scenes/main.tscn loads as a PackedScene
+PASS: main scene root is a Node3D
+PASS: main scene root is named Main
+PASS: main scene root runs src/game.gd
+PASS: main scene has a Camera3D
+PASS: main scene is registered in project.godot
+PASS: StudioCapture autoload points at the capture addon
+PASS: viewport width is 1152
+PASS: viewport height is 648
+PASS: 46 checks passed
+[test] PASS
