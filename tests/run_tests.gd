@@ -11,6 +11,7 @@ extends SceneTree
 const LevelData = preload("res://src/level_data.gd")
 const LevelLoader = preload("res://src/level_loader.gd")
 const SokobanModel = preload("res://src/sokoban_model.gd")
+const SokobanDemo = preload("res://src/sokoban_demo.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
 const FIXTURE_DIR := "res://tests/fixtures/"
@@ -23,6 +24,7 @@ var _failed := 0
 
 func _init() -> void:
 	_test_valid_level()
+	_test_demo_pushed()
 	_test_loader_rejections()
 	_test_free_move()
 	_test_push()
@@ -62,7 +64,28 @@ func _test_valid_level() -> void:
 	for goal in level.goals:
 		if level.crates.has(goal):
 			placed += 1
-	_check(placed == 1, "level-001 starts with one crate on a goal for the board readout")
+	_check(placed == 0, "level-001 starts with no crate on a goal (design R2)")
+	_check(placed < level.goals.size(), "level-001 does not start solved")
+
+
+func _test_demo_pushed() -> void:
+	var level: LevelData = LevelLoader.load_level(LEVEL_PATH)
+	_check(level != null and level.is_valid(), "the --demo=pushed level loads")
+	if level == null or not level.is_valid():
+		return
+	var model := SokobanModel.new()
+	model.setup(level)
+	for direction in SokobanDemo.pushed_moves():
+		_check(model.try_move(direction), "the --demo=pushed move %s succeeds" % direction)
+	var placed := 0
+	for goal in model.goals.keys():
+		if model.crates.has(goal):
+			placed += 1
+	_check(placed == 1, "the --demo=pushed sequence leaves exactly one crate on a goal")
+	_check(model.crates.has(Vector2i(6, 2)), "the demo crate lands on goal (6, 2)")
+	_check(not model.crates.has(Vector2i(2, 2)), "goal (2, 2) stays empty after the demo")
+	_check(not model.crates.has(Vector2i(3, 7)), "goal (3, 7) stays empty after the demo")
+	_check(model.player == Vector2i(6, 3), "the demo player ends at (6, 3)")
 
 
 func _test_loader_rejections() -> void:

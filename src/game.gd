@@ -8,6 +8,7 @@ extends Node3D
 const LevelData = preload("res://src/level_data.gd")
 const LevelLoader = preload("res://src/level_loader.gd")
 const SokobanModel = preload("res://src/sokoban_model.gd")
+const SokobanDemo = preload("res://src/sokoban_demo.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
 
@@ -83,6 +84,8 @@ func _ready() -> void:
 	_build_board(level)
 	_update_goal_rings()
 	_update_player()
+	if SokobanDemo.requested():
+		_apply_demo_pushed()
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -111,6 +114,13 @@ func _move(direction: Vector2i) -> void:
 		_sync_crates(crates_before)
 		_update_goal_rings()
 	_update_player()
+
+
+## Runs the fixed screenshot sequence through the normal move path. Only
+## --demo=pushed reaches this; a normal run never applies the demo.
+func _apply_demo_pushed() -> void:
+	for direction in SokobanDemo.pushed_moves():
+		_move(direction)
 
 
 func _sync_crates(crates_before: Array) -> void:
