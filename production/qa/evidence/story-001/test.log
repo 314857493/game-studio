@@ -9,7 +9,19 @@ PASS: level-001 is a 9x9 grid
 PASS: level-001 has three crates
 PASS: level-001 has three goals
 PASS: level-001 spawns the player on floor
-PASS: level-001 starts with one crate on a goal for the board readout
+PASS: level-001 starts with no crate on a goal (design R2)
+PASS: level-001 does not start solved
+PASS: the --demo=pushed level loads
+PASS: the --demo=pushed move (1, 0) succeeds
+PASS: the --demo=pushed move (1, 0) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed sequence leaves exactly one crate on a goal
+PASS: the demo crate lands on goal (6, 2)
+PASS: goal (2, 2) stays empty after the demo
+PASS: goal (3, 7) stays empty after the demo
+PASS: the demo player ends at (6, 3)
 ERROR: level 'bad-count': crate count 2 does not match goal count 3
    at: push_error (core/variant/variant_utility.cpp:1023)
    GDScript backtrace (most recent call first):
@@ -17,8 +29,8 @@ ERROR: level 'bad-count': crate count 2 does not match goal count 3
        [1] _fail (res://src/level_loader.gd:186)
        [2] _parse (res://src/level_loader.gd:54)
        [3] load_level (res://src/level_loader.gd:36)
-       [4] _test_loader_rejections (res://tests/run_tests.gd:78)
-       [5] _init (res://tests/run_tests.gd:26)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:101)
+       [5] _init (res://tests/run_tests.gd:28)
 PASS: bad-count.json is rejected
 PASS: bad-count.json error names the level id
 PASS: bad-count.json error explains the failure
@@ -29,8 +41,8 @@ ERROR: level 'bad-no-player': no player spawn
        [1] _read_player (res://src/level_loader.gd:118)
        [2] _parse (res://src/level_loader.gd:49)
        [3] load_level (res://src/level_loader.gd:36)
-       [4] _test_loader_rejections (res://tests/run_tests.gd:78)
-       [5] _init (res://tests/run_tests.gd:26)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:101)
+       [5] _init (res://tests/run_tests.gd:28)
 PASS: bad-no-player.json is rejected
 PASS: bad-no-player.json error names the level id
 PASS: bad-no-player.json error explains the failure
@@ -41,8 +53,8 @@ ERROR: level 'bad-overlap': player and crate share cell (2, 2)
        [1] _read_player (res://src/level_loader.gd:125)
        [2] _parse (res://src/level_loader.gd:49)
        [3] load_level (res://src/level_loader.gd:36)
-       [4] _test_loader_rejections (res://tests/run_tests.gd:78)
-       [5] _init (res://tests/run_tests.gd:26)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:101)
+       [5] _init (res://tests/run_tests.gd:28)
 PASS: bad-overlap.json is rejected
 PASS: bad-overlap.json error names the level id
 PASS: bad-overlap.json error explains the failure
@@ -76,5 +88,5 @@ PASS: main scene is registered in project.godot
 PASS: StudioCapture autoload points at the capture addon
 PASS: viewport width is 1152
 PASS: viewport height is 648
-PASS: 46 checks passed
+PASS: 58 checks passed
 [test] PASS

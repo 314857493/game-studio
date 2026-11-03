@@ -18,14 +18,10 @@ Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
 [92m[ DONE ][39m [1mloading_editor_layout[22m
 [0m
 [check] import OK
-$ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://tests/run_tests.gd
-[check] ok res://tests/run_tests.gd
 $ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://src/game.gd
 [check] ok res://src/game.gd
-$ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://src/level_data.gd
-[check] ok res://src/level_data.gd
-$ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://src/level_loader.gd
-[check] ok res://src/level_loader.gd
-$ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://src/sokoban_model.gd
-[check] ok res://src/sokoban_model.gd
-[check] parsed 5 changed script(s)
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://tests/run_tests.gd
+[check] ok res://tests/run_tests.gd
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . --check-only --script res://src/sokoban_demo.gd
+[check] ok res://src/sokoban_demo.gd
+[check] parsed 3 changed script(s)

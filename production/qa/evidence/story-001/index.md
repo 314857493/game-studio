@@ -1,8 +1,8 @@
 # Evidence: story-001
 
-Run result: OBSERVED — the 1152x648 window shows the 3D diorama: a pale checker floor inside slate walls, three orange crates, a blue player capsule, two cyan empty goal rings, and one green placed-goal ring under the crate at (3, 7).
+Run result: OBSERVED — the 1152x648 frame captured with --demo=pushed shows exactly one crate on the (6, 2) goal (green ring) and the other two goals (2, 2) and (3, 7) empty (cyan rings), with the player at (6, 3); the same occupancy and player cell are asserted by the headless demo test.
 
-- `story-001-1.png` — `python scripts/studio.py capture --out production/qa/evidence/story-001/story-001-1.png`: the playable board at start; the crate on the goal shows the green ring, while the two empty goals at (2, 2) and (6, 2) show cyan rings.
-- `check.log` — `python scripts/studio.py check` output: exit 0, `[check] import OK`, and all five changed scripts parse.
-- `test.log` — `python scripts/studio.py test` output: exit 0, `PASS: 46 checks passed`; the three `ERROR: level '<id>'` lines are the expected loader rejections asserted by the test.
-- `capture.log` — `python scripts/studio.py capture --out production/qa/evidence/story-001/story-001-1.png` output: exit 0, a 1152x648 PNG of 28391 bytes, no script errors.
+- `story-001-1.png` — `python scripts/studio.py capture --out production/qa/evidence/story-001/story-001-1.png -- --demo=pushed`: the demo-pushed frame; the crate on (6, 2) sits inside the green placed-goal ring, the empty goals at (2, 2) and (3, 7) show cyan rings, and the other two crates stay on floor.
+- `check.log` — `python scripts/studio.py check` output: exit 0, `[check] import OK`, and all changed scripts (including `src/sokoban_demo.gd`) parse.
+- `test.log` — `python scripts/studio.py test` output: exit 0, `PASS: 58 checks passed`; the demo test asserts exactly one crate on a goal, the other goals empty, and the player at (6, 3); the three `ERROR: level '<id>'` lines are the expected loader rejections.
+- `capture.log` — `python scripts/studio.py capture --out production/qa/evidence/story-001/story-001-1.png -- --demo=pushed` output: exit 0, a 1152x648 PNG of 28379 bytes, user arguments `--demo=pushed`.

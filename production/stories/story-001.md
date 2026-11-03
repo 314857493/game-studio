@@ -17,6 +17,9 @@ Visual direction follows the design's proposed "minimal geometric diorama":
 pale stone floor tiles, slate wall blocks, warm orange crates, and glowing
 sockets for goals. Camera sits at a fixed 40° pitch with yaw 0 over the level.
 
+The screenshot-only `--demo=pushed` flag applies a fixed push sequence so the
+evidence frame shows one placed crate. Normal runs never execute it.
+
 ## Acceptance
 
 - [x] The level loads from `assets/data/levels/level-001.json` (one 9x9 grid, walls,
@@ -30,11 +33,13 @@ sockets for goals. Camera sits at a fixed 40° pitch with yaw 0 over the level.
 - [x] Pressing a direction key toward a wall, or toward a crate whose far cell is blocked
       (wall, crate, or grid edge), changes no cell and no counter, but the player still
       turns to face that direction.
-- [x] The board renders in 3D in one frame at 1152x648: floor, walls, goals, crates and
-      the player are all distinguishable, and a goal under a crate reads differently from
-      an empty goal.
-- [x] `python scripts/studio.py check` and `python scripts/studio.py test` both exit 0,
-      and the headless tests cover the three loader rejections plus R4, R5 and R6.
+- [x] `capture_command` run with `-- --demo=pushed` captures a frame where exactly one
+      crate is on a goal and another goal is visibly empty; floor, walls, crates and the
+      player stay distinguishable in the same 1152x648 3D frame.
+- [x] `python scripts/studio.py check` and `python scripts/studio.py test` both exit 0;
+      the headless tests cover the three loader rejections, R4, R5 and R6, and the
+      `--demo=pushed` sequence ends with exactly one crate on a goal and the other goals
+      empty.
 
 ## Out of scope
 
