@@ -3,4 +3,4 @@
 [capture] user arguments: --demo=pushed
 [capture] waiting up to 60s for the PNG
 $ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png --demo=pushed
-[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png (38981 bytes)
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png (41824 bytes)
