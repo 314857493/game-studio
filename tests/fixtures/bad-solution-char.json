@@ -1,0 +1,16 @@
+{
+  "id": "bad-solution-char",
+  "width": 5,
+  "height": 5,
+  "tiles": [
+    "#####",
+    "#...#",
+    "#...#",
+    "#...#",
+    "#####"
+  ],
+  "goals": [[1, 1]],
+  "crates": [[2, 2]],
+  "player": [1, 3],
+  "solution": "UX"
+}
