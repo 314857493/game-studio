@@ -2,8 +2,12 @@ extends Node3D
 
 ## Builds the 3D board for one level and applies the Sokoban movement rules.
 ##
-## Story-001 scope: level loading, the grid, moving, pushing, bumping and the
-## fixed camera. Win detection, undo and the rest of the rules are out of scope.
+## Implements story-001 (grid, movement, pushing) and story-002 (win, undo,
+## restart) for level-001. Pause, input buffering and level sequencing are out
+## of scope.
+
+signal won(moves: int, pushes: int, seconds: float)
+signal restarted()
 
 const LevelData = preload("res://src/level_data.gd")
 const LevelLoader = preload("res://src/level_loader.gd")
@@ -16,6 +20,8 @@ const ACTION_UP := &"move_up"
 const ACTION_DOWN := &"move_down"
 const ACTION_LEFT := &"move_left"
 const ACTION_RIGHT := &"move_right"
+const ACTION_UNDO := &"undo"
+const ACTION_RESTART := &"restart"
 
 const HALF := 0.5
 const CELL_SIZE := 1.0
@@ -57,7 +63,12 @@ const COLOR_GOAL_PLACED := Color("5dff7a")
 const COLOR_BACKGROUND := Color(0.06, 0.07, 0.1)
 const COLOR_AMBIENT := Color(0.55, 0.6, 0.75)
 
+@onready var _board: Node3D = $Board
+
+var _level: LevelData
 var _model: SokobanModel
+var _won: bool = false
+var _started_at_msec: int = 0
 var _goal_nodes: Dictionary = {}
 var _crate_nodes: Dictionary = {}
 var _player_node: Node3D
@@ -80,19 +91,32 @@ func _ready() -> void:
 	if not level.is_valid():
 		push_error("playable core: %s" % level.error)
 		return
+	_level = level
 	_model = SokobanModel.new()
 	_model.setup(level)
+	_started_at_msec = Time.get_ticks_msec()
 	_build_board(level)
 	_update_goal_rings()
 	_update_player()
-	if SokobanDemo.requested():
-		_apply_demo_pushed()
+	var demo_mode: String = SokobanDemo.requested()
+	if demo_mode == SokobanDemo.MODE_PUSHED:
+		_apply_demo(SokobanDemo.pushed_moves())
+	elif demo_mode == SokobanDemo.MODE_WIN:
+		_apply_demo(SokobanDemo.win_moves())
 
 
 func _unhandled_input(event: InputEvent) -> void:
 	if _model == null:
 		return
 	if event is InputEventKey and (event as InputEventKey).is_echo():
+		return
+	if event.is_action_pressed(ACTION_RESTART):
+		_restart()
+		return
+	if _won:
+		return
+	if event.is_action_pressed(ACTION_UNDO):
+		_undo()
 		return
 	var direction := Vector2i.ZERO
 	if event.is_action_pressed(ACTION_UP):
@@ -115,13 +139,67 @@ func _move(direction: Vector2i) -> void:
 		_sync_crates(crates_before)
 		_update_goal_rings()
 	_update_player()
+	if moved and _model.is_solved():
+		_win()
 
 
-## Runs the fixed screenshot sequence through the normal move path. Only
-## --demo=pushed reaches this; a normal run never applies the demo.
-func _apply_demo_pushed() -> void:
-	for direction in SokobanDemo.pushed_moves():
+## Runs a fixed screenshot sequence through the normal move path. Only a demo
+## mode reaches this; a normal run never applies it.
+func _apply_demo(moves: Array) -> void:
+	for direction in moves:
 		_move(direction)
+
+
+## R7: the next completed move put a crate on every goal, so lock input and
+## tell the results card.
+func _win() -> void:
+	if _won:
+		return
+	_won = true
+	var elapsed: float = maxf(0.0, float(Time.get_ticks_msec() - _started_at_msec) / 1000.0)
+	won.emit(_model.move_count, _model.push_count, elapsed)
+
+
+## R8: take the last completed move back and refresh the board.
+func _undo() -> void:
+	if _won:
+		return
+	if not _model.undo():
+		return
+	_rebuild_crates()
+	_update_goal_rings()
+	_update_player()
+
+
+## R9: rebuild the level from its loaded start state and hide the card.
+func _restart() -> void:
+	if _level == null or _model == null:
+		return
+	_model.setup(_level)
+	_clear_board()
+	_build_board(_level)
+	_update_goal_rings()
+	_update_player()
+	_won = false
+	_started_at_msec = Time.get_ticks_msec()
+	restarted.emit()
+
+
+func _clear_board() -> void:
+	for child in _board.get_children():
+		child.free()
+	_goal_nodes.clear()
+	_crate_nodes.clear()
+	_player_node = null
+
+
+func _rebuild_crates() -> void:
+	for cell in _crate_nodes.keys():
+		var node: MeshInstance3D = _crate_nodes[cell]
+		node.free()
+	_crate_nodes.clear()
+	for cell in _model.crates.keys():
+		_add_crate(cell)
 
 
 func _sync_crates(crates_before: Array) -> void:
@@ -167,7 +245,7 @@ func _add_floor(cell: Vector2i, light: bool) -> void:
 	node.mesh = mesh
 	node.material_override = _floor_light if light else _floor_dark
 	node.position = _cell_to_world(cell) + Vector3.DOWN * FLOOR_THICKNESS * HALF
-	add_child(node)
+	_board.add_child(node)
 
 
 func _add_wall(cell: Vector2i) -> void:
@@ -177,7 +255,7 @@ func _add_wall(cell: Vector2i) -> void:
 	node.mesh = mesh
 	node.material_override = _wall_material
 	node.position = _cell_to_world(cell) + Vector3.UP * WALL_HEIGHT * HALF
-	add_child(node)
+	_board.add_child(node)
 
 
 func _add_goal(cell: Vector2i) -> void:
@@ -190,7 +268,7 @@ func _add_goal(cell: Vector2i) -> void:
 	node.mesh = mesh
 	node.material_override = _goal_empty_material
 	node.position = _cell_to_world(cell) + Vector3.UP * GOAL_Y
-	add_child(node)
+	_board.add_child(node)
 	_goal_nodes[cell] = node
 
 
@@ -201,7 +279,7 @@ func _add_crate(cell: Vector2i) -> void:
 	node.mesh = mesh
 	node.material_override = _crate_material
 	node.position = _cell_to_world(cell) + Vector3.UP * CRATE_SIZE * HALF
-	add_child(node)
+	_board.add_child(node)
 	_crate_nodes[cell] = node
 
 
@@ -209,7 +287,7 @@ func _add_player(cell: Vector2i) -> void:
 	_player_node = Node3D.new()
 	_player_node.name = "Player"
 	_player_node.position = _cell_to_world(cell)
-	add_child(_player_node)
+	_board.add_child(_player_node)
 	var body := MeshInstance3D.new()
 	var capsule := CapsuleMesh.new()
 	capsule.radius = PLAYER_RADIUS
@@ -320,6 +398,8 @@ func _register_actions() -> void:
 	_add_action(ACTION_DOWN, [KEY_DOWN, KEY_S])
 	_add_action(ACTION_LEFT, [KEY_LEFT, KEY_A])
 	_add_action(ACTION_RIGHT, [KEY_RIGHT, KEY_D])
+	_add_action(ACTION_UNDO, [KEY_Z, KEY_U])
+	_add_action(ACTION_RESTART, [KEY_R])
 
 
 func _add_action(action: StringName, keys: Array) -> void:
