@@ -33,8 +33,9 @@ const GOAL_RINGS := 24
 const GOAL_RING_SEGMENTS := 8
 
 const CAMERA_DISTANCE := 20.0
-const CAMERA_PITCH_DEGREES := 40.0
-const CAMERA_SIZE := 8.5
+const CAMERA_PITCH_DEGREES := 55.0
+const CAMERA_YAW_DEGREES := 45.0
+const CAMERA_SIZE := 12.0
 const CAMERA_NEAR := 0.05
 const CAMERA_FAR := 100.0
 const SUN_ROTATION_DEGREES := Vector3(-55.0, -30.0, 0.0)
@@ -281,8 +282,11 @@ func _setup_camera() -> void:
 	camera.near = CAMERA_NEAR
 	camera.far = CAMERA_FAR
 	var pitch := deg_to_rad(CAMERA_PITCH_DEGREES)
+	var yaw := deg_to_rad(CAMERA_YAW_DEGREES)
 	camera.position = Vector3(
-		0.0, sin(pitch) * CAMERA_DISTANCE, cos(pitch) * CAMERA_DISTANCE
+		sin(yaw) * cos(pitch) * CAMERA_DISTANCE,
+		sin(pitch) * CAMERA_DISTANCE,
+		cos(yaw) * cos(pitch) * CAMERA_DISTANCE,
 	)
 	camera.look_at(Vector3.ZERO, Vector3.UP)
 
