@@ -2,19 +2,23 @@ extends Node3D
 
 ## Builds the 3D board for one level and applies the Sokoban movement rules.
 ##
-## Implements story-001 (grid, movement, pushing) and story-002 (win, undo,
-## restart) for level-001. Pause, input buffering and level sequencing are out
-## of scope.
+## Implements story-001 (grid, movement, pushing), story-002 (win, undo,
+## restart) and story-003 (move animations, input buffer, pause, HUD) for
+## level-001. Level sequencing is out of scope.
 
 signal won(moves: int, pushes: int, seconds: float)
 signal restarted()
+signal hud_changed(moves: int, pushes: int, level_number: int)
+signal pause_changed(paused: bool)
 
 const LevelData = preload("res://src/level_data.gd")
 const LevelLoader = preload("res://src/level_loader.gd")
 const SokobanModel = preload("res://src/sokoban_model.gd")
 const SokobanDemo = preload("res://src/sokoban_demo.gd")
+const GameFlow = preload("res://src/game_flow.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
+const LEVEL_NUMBER := 1
 
 const ACTION_UP := &"move_up"
 const ACTION_DOWN := &"move_down"
@@ -22,6 +26,7 @@ const ACTION_LEFT := &"move_left"
 const ACTION_RIGHT := &"move_right"
 const ACTION_UNDO := &"undo"
 const ACTION_RESTART := &"restart"
+const ACTION_PAUSE := &"pause"
 
 const HALF := 0.5
 const CELL_SIZE := 1.0
@@ -67,8 +72,14 @@ const COLOR_AMBIENT := Color(0.55, 0.6, 0.75)
 
 var _level: LevelData
 var _model: SokobanModel
+var _flow: GameFlow
+var _demo_mode: String = SokobanDemo.MODE_NONE
 var _won: bool = false
 var _started_at_msec: int = 0
+var _active_tween: Tween
+var _active_push: bool = false
+var _active_crate_from: Vector2i = Vector2i(-1, -1)
+var _active_crate_to: Vector2i = Vector2i(-1, -1)
 var _goal_nodes: Dictionary = {}
 var _crate_nodes: Dictionary = {}
 var _player_node: Node3D
@@ -92,28 +103,47 @@ func _ready() -> void:
 		push_error("playable core: %s" % level.error)
 		return
 	_level = level
+	_flow = GameFlow.new()
 	_model = SokobanModel.new()
 	_model.setup(level)
 	_started_at_msec = Time.get_ticks_msec()
 	_build_board(level)
 	_update_goal_rings()
 	_update_player()
-	var demo_mode: String = SokobanDemo.requested()
-	if demo_mode == SokobanDemo.MODE_PUSHED:
+	_emit_hud()
+	_demo_mode = SokobanDemo.requested()
+	if _demo_mode == SokobanDemo.MODE_PUSHED:
 		_apply_demo(SokobanDemo.pushed_moves())
-	elif demo_mode == SokobanDemo.MODE_WIN:
+	elif _demo_mode == SokobanDemo.MODE_WIN:
 		_apply_demo(SokobanDemo.win_moves())
+	elif _demo_mode == SokobanDemo.MODE_PAUSE:
+		_apply_demo(SokobanDemo.pause_moves())
+		_set_paused(true)
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and _demo_mode == SokobanDemo.MODE_NONE:
+		_set_paused(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _model == null:
+	if _model == null or _flow == null:
 		return
 	if event is InputEventKey and (event as InputEventKey).is_echo():
 		return
-	if event.is_action_pressed(ACTION_RESTART):
-		_restart()
+	if event.is_action_pressed(ACTION_PAUSE):
+		if _won:
+			return
+		_set_paused(not _flow.is_paused())
+		return
+	if _flow.is_paused():
 		return
 	if _won:
+		if event.is_action_pressed(ACTION_RESTART):
+			_restart()
+		return
+	if event.is_action_pressed(ACTION_RESTART):
+		_restart()
 		return
 	if event.is_action_pressed(ACTION_UNDO):
 		_undo()
@@ -129,29 +159,107 @@ func _unhandled_input(event: InputEvent) -> void:
 		direction = SokobanModel.DIR_RIGHT
 	if direction == Vector2i.ZERO:
 		return
-	_move(direction)
+	if _flow.is_animating():
+		_flow.buffer_move(direction)
+	else:
+		_start_move(direction)
 
 
-func _move(direction: Vector2i) -> void:
-	var crates_before: Array = _model.crates.keys()
+func _start_move(direction: Vector2i) -> void:
+	if _won or _flow == null or _flow.is_paused():
+		return
+	if _flow.is_animating():
+		_flow.buffer_move(direction)
+		return
+	var player_before: Vector2i = _model.player
+	var pushes_before: int = _model.push_count
 	var moved: bool = _model.try_move(direction)
-	if moved:
-		_sync_crates(crates_before)
-		_update_goal_rings()
-	_update_player()
-	if moved and _model.is_solved():
+	_player_node.rotation.y = _facing_yaw(direction)
+	if not moved:
+		_start_bump()
+		return
+	var pushed: bool = _model.push_count > pushes_before
+	_flow.begin_animation()
+	_active_push = pushed
+	_active_crate_from = Vector2i(-1, -1)
+	_active_crate_to = Vector2i(-1, -1)
+	_player_node.position = _cell_to_world(player_before)
+	var duration: float = _flow.move_duration(pushed)
+	_active_tween = create_tween()
+	_active_tween.tween_property(_player_node, "position", _cell_to_world(_model.player), duration)
+	if pushed:
+		_active_crate_from = _model.player
+		_active_crate_to = _model.player + direction
+		var crate_node: MeshInstance3D = _crate_nodes[_active_crate_from]
+		_active_tween.parallel().tween_property(
+			crate_node, "position", _crate_world(_active_crate_to), duration
+		)
+	_active_tween.finished.connect(_on_animation_finished)
+
+
+func _start_bump() -> void:
+	_flow.begin_animation()
+	_active_push = false
+	_active_crate_from = Vector2i(-1, -1)
+	_active_crate_to = Vector2i(-1, -1)
+	_player_node.position = _cell_to_world(_model.player)
+	_active_tween = create_tween()
+	_active_tween.tween_interval(GameFlow.BUMP_DURATION)
+	_active_tween.finished.connect(_on_animation_finished)
+
+
+func _on_animation_finished() -> void:
+	_finish_animation(true)
+
+
+## Ends the in-flight move: snaps the tween and cells to the end, refreshes the
+## HUD, optionally reports the win, then attempts the buffered move.
+func _finish_animation(report_win: bool) -> void:
+	if _active_tween != null:
+		if _active_tween.is_running():
+			_active_tween.kill()
+		_active_tween = null
+	_player_node.position = _cell_to_world(_model.player)
+	_player_node.rotation.y = _facing_yaw(_model.facing)
+	if _active_push:
+		var node: MeshInstance3D = _crate_nodes[_active_crate_from]
+		_crate_nodes.erase(_active_crate_from)
+		_crate_nodes[_active_crate_to] = node
+		node.position = _crate_world(_active_crate_to)
+	_active_push = false
+	_active_crate_from = Vector2i(-1, -1)
+	_active_crate_to = Vector2i(-1, -1)
+	_flow.end_animation()
+	_update_goal_rings()
+	_emit_hud()
+	if report_win and _model.is_solved():
 		_win()
+	if _flow.has_buffered() and not _won and not _flow.is_paused():
+		_start_move(_flow.take_buffered())
 
 
-## Runs a fixed screenshot sequence through the normal move path. Only a demo
-## mode reaches this; a normal run never applies it.
-func _apply_demo(moves: Array) -> void:
-	for direction in moves:
-		_move(direction)
+## R10: pause (snapping any in-flight move first) or resume.
+func _set_paused(paused: bool) -> void:
+	if _flow == null:
+		return
+	if paused:
+		if _won or _flow.is_paused():
+			return
+		if _flow.is_animating():
+			_flow.clear_buffer()
+			_finish_animation(true)
+			if _won:
+				return
+		_flow.pause()
+	else:
+		if not _flow.is_paused():
+			return
+		_flow.resume()
+	pause_changed.emit(paused)
 
 
-## R7: the next completed move put a crate on every goal, so lock input and
-## tell the results card.
+## R7: the completed move put a crate on every goal, so lock input and tell
+## the results card.
 func _win() -> void:
 	if _won:
 		return
@@ -160,21 +268,34 @@ func _win() -> void:
 	won.emit(_model.move_count, _model.push_count, elapsed)
 
 
-## R8: take the last completed move back and refresh the board.
+## R8: snap any in-flight move, then take the last completed move back.
 func _undo() -> void:
-	if _won:
+	if _won or _flow == null or _flow.is_paused():
 		return
+	if _flow.is_animating():
+		_flow.clear_buffer()
+		_finish_animation(false)
 	if not _model.undo():
 		return
 	_rebuild_crates()
 	_update_goal_rings()
 	_update_player()
+	_emit_hud()
 
 
 ## R9: rebuild the level from its loaded start state and hide the card.
 func _restart() -> void:
-	if _level == null or _model == null:
+	if _level == null or _model == null or _flow == null:
 		return
+	if _active_tween != null:
+		_active_tween.kill()
+		_active_tween = null
+	_flow.clear_buffer()
+	_flow.end_animation()
+	_flow.resume()
+	_active_push = false
+	_active_crate_from = Vector2i(-1, -1)
+	_active_crate_to = Vector2i(-1, -1)
 	_model.setup(_level)
 	_clear_board()
 	_build_board(_level)
@@ -182,7 +303,22 @@ func _restart() -> void:
 	_update_player()
 	_won = false
 	_started_at_msec = Time.get_ticks_msec()
+	_emit_hud()
 	restarted.emit()
+	pause_changed.emit(false)
+
+
+## Runs a fixed screenshot sequence and snaps each move, so the capture lands
+## on the intended frame. Only a demo mode reaches this.
+func _apply_demo(moves: Array) -> void:
+	for direction in moves:
+		_start_move(direction)
+		if _flow.is_animating():
+			_finish_animation(true)
+
+
+func _emit_hud() -> void:
+	hud_changed.emit(_model.move_count, _model.push_count, LEVEL_NUMBER)
 
 
 func _clear_board() -> void:
@@ -200,27 +336,6 @@ func _rebuild_crates() -> void:
 	_crate_nodes.clear()
 	for cell in _model.crates.keys():
 		_add_crate(cell)
-
-
-func _sync_crates(crates_before: Array) -> void:
-	for old_cell in crates_before:
-		if _model.crates.has(old_cell):
-			continue
-		var new_cell: Vector2i = _crate_destination(crates_before)
-		if new_cell == old_cell:
-			continue
-		var node: MeshInstance3D = _crate_nodes[old_cell]
-		_crate_nodes.erase(old_cell)
-		_crate_nodes[new_cell] = node
-		node.position = _cell_to_world(new_cell) + Vector3.UP * CRATE_SIZE * HALF
-		return
-
-
-func _crate_destination(crates_before: Array) -> Vector2i:
-	for cell in _model.crates.keys():
-		if not crates_before.has(cell):
-			return cell
-	return Vector2i(-1, -1)
 
 
 func _build_board(level: LevelData) -> void:
@@ -278,7 +393,7 @@ func _add_crate(cell: Vector2i) -> void:
 	var node := MeshInstance3D.new()
 	node.mesh = mesh
 	node.material_override = _crate_material
-	node.position = _cell_to_world(cell) + Vector3.UP * CRATE_SIZE * HALF
+	node.position = _crate_world(cell)
 	_board.add_child(node)
 	_crate_nodes[cell] = node
 
@@ -328,6 +443,10 @@ func _cell_to_world(cell: Vector2i) -> Vector3:
 		0.0,
 		(float(cell.y) - float(_model.height - 1) * HALF) * CELL_SIZE,
 	)
+
+
+func _crate_world(cell: Vector2i) -> Vector3:
+	return _cell_to_world(cell) + Vector3.UP * CRATE_SIZE * HALF
 
 
 func _setup_environment() -> void:
@@ -400,6 +519,7 @@ func _register_actions() -> void:
 	_add_action(ACTION_RIGHT, [KEY_RIGHT, KEY_D])
 	_add_action(ACTION_UNDO, [KEY_Z, KEY_U])
 	_add_action(ACTION_RESTART, [KEY_R])
+	_add_action(ACTION_PAUSE, [KEY_ESCAPE])
 
 
 func _add_action(action: StringName, keys: Array) -> void:

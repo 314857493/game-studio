@@ -1,21 +1,25 @@
 extends RefCounted
 
-## Screenshot-only showcases for level-001, used only with --demo=pushed or
-## --demo=win. Normal runs never call this module.
+## Screenshot-only showcases for level-001, used only with --demo=pushed,
+## --demo=win or --demo=pause. Normal runs never call this module.
 ##
 ## --demo=pushed: right, right, up, up, up pushes crate (6, 4) onto goal (6, 2).
 ## --demo=win: the 21-move recorded solve below finishes the level; it pushes
 ## crate (4, 7) to goal (3, 7), crate (6, 4) to goal (6, 2), and crate (4, 4)
 ## to goal (2, 2).
+## --demo=pause: the first three solving moves put crate (4, 7) on goal (3, 7),
+## then the game opens the pause overlay over that partially solved board.
 
 const SokobanModel = preload("res://src/sokoban_model.gd")
 
 const MODE_NONE := ""
 const MODE_PUSHED := "pushed"
 const MODE_WIN := "win"
+const MODE_PAUSE := "pause"
 
 const FLAG_PUSHED := "--demo=pushed"
 const FLAG_WIN := "--demo=win"
+const FLAG_PAUSE := "--demo=pause"
 
 const PUSHED_MOVES: Array[Vector2i] = [
 	SokobanModel.DIR_RIGHT,
@@ -49,18 +53,26 @@ const WIN_MOVES: Array[Vector2i] = [
 	SokobanModel.DIR_UP,     # pushes it to goal (2, 2)
 ]
 
+const PAUSE_MOVES: Array[Vector2i] = [
+	SokobanModel.DIR_RIGHT,
+	SokobanModel.DIR_DOWN,
+	SokobanModel.DIR_LEFT,   # pushes crate (4, 7) to goal (3, 7)
+]
 
-## Returns MODE_PUSHED or MODE_WIN only when the matching flag is present.
+
+## Returns the requested demo mode, or MODE_NONE for a normal run.
 static func requested() -> String:
 	for argument in OS.get_cmdline_user_args():
 		if argument == FLAG_PUSHED:
 			return MODE_PUSHED
 		if argument == FLAG_WIN:
 			return MODE_WIN
+		if argument == FLAG_PAUSE:
+			return MODE_PAUSE
 	return MODE_NONE
 
 
-## The fixed sequence, as a fresh array so callers cannot mutate the constant.
+## The fixed sequences, as fresh arrays so callers cannot mutate the constants.
 static func pushed_moves() -> Array[Vector2i]:
 	return PUSHED_MOVES.duplicate()
 
@@ -68,3 +80,8 @@ static func pushed_moves() -> Array[Vector2i]:
 ## The recorded solve, as a fresh array so callers cannot mutate the constant.
 static func win_moves() -> Array[Vector2i]:
 	return WIN_MOVES.duplicate()
+
+
+## The partial solve shown behind the pause overlay.
+static func pause_moves() -> Array[Vector2i]:
+	return PAUSE_MOVES.duplicate()
