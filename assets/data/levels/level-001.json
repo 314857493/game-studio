@@ -15,5 +15,6 @@
   ],
   "goals": [[2, 2], [6, 2], [3, 7]],
   "crates": [[4, 4], [6, 4], [4, 7]],
-  "player": [4, 6]
+  "player": [4, 6],
+  "solution": "UUDDRDLUURRUUDLLURULL"
 }

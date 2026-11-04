@@ -1,0 +1,335 @@
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . --import
+[test] project: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-004-campaign-94c56c69e5af
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . -s res://tests/run_tests.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: level-001 loads through the loader
+PASS: level-001 keeps its id
+PASS: level-001 is a 9x9 grid
+PASS: level-001 has three crates
+PASS: level-001 has three goals
+PASS: level-001 spawns the player on floor
+PASS: level-001 starts with no crate on a goal (design R2)
+PASS: level-001 does not start solved
+PASS: level-001 carries a recorded solution
+PASS: the --demo=pushed level loads
+PASS: the --demo=pushed move (1, 0) succeeds
+PASS: the --demo=pushed move (1, 0) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed sequence leaves exactly one crate on a goal
+PASS: the demo crate lands on goal (6, 2)
+PASS: goal (2, 2) stays empty after the demo
+PASS: goal (3, 7) stays empty after the demo
+PASS: the demo player ends at (6, 3)
+ERROR: level 'bad-count': crate count 2 does not match goal count 3
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:206)
+       [1] _fail (res://src/level_loader.gd:210)
+       [2] _parse (res://src/level_loader.gd:56)
+       [3] load_level (res://src/level_loader.gd:38)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:128)
+       [5] _init (res://tests/run_tests.gd:37)
+PASS: bad-count.json is rejected
+PASS: bad-count.json error names the level id
+PASS: bad-count.json error explains the failure
+ERROR: level 'bad-no-player': no player spawn
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:206)
+       [1] _read_player (res://src/level_loader.gd:122)
+       [2] _parse (res://src/level_loader.gd:51)
+       [3] load_level (res://src/level_loader.gd:38)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:128)
+       [5] _init (res://tests/run_tests.gd:37)
+PASS: bad-no-player.json is rejected
+PASS: bad-no-player.json error names the level id
+PASS: bad-no-player.json error explains the failure
+ERROR: level 'bad-overlap': player and crate share cell (2, 2)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:206)
+       [1] _read_player (res://src/level_loader.gd:129)
+       [2] _parse (res://src/level_loader.gd:51)
+       [3] load_level (res://src/level_loader.gd:38)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:128)
+       [5] _init (res://tests/run_tests.gd:37)
+PASS: bad-overlap.json is rejected
+PASS: bad-overlap.json error names the level id
+PASS: bad-overlap.json error explains the failure
+PASS: R4: a free move succeeds
+PASS: R4: the player moves exactly one cell right
+PASS: R4: the move counter increments and pushes stay zero
+PASS: R4: the player faces the move direction
+PASS: R4: a goal cell is walkable
+PASS: R4: the player may stand on a goal
+PASS: R5: a push succeeds when the far cell is empty
+PASS: R5: the player enters the crate's old cell
+PASS: R5: the crate moves exactly one cell
+PASS: R5: move and push counters each increment
+PASS: R6: moving into a wall is refused
+PASS: R6: a wall leaves the player cell unchanged
+PASS: R6: a wall changes no counter
+PASS: R6: a wall still turns the player
+PASS: R6: a crate pushed toward a wall is refused
+PASS: R6: a blocked push moves no cell and changes no counter
+PASS: R6: a crate pushed toward another crate is refused
+PASS: R6: a blocked crate push changes no counter
+PASS: R6: a crate pushed toward the grid edge is refused
+PASS: R6: a grid edge leaves the cell but still turns
+PASS: R7: level-001 starts unsolved
+PASS: R7: the --demo=win solve is legal
+PASS: R7: the --demo=win solve leaves every goal occupied
+PASS: R7: all three goals hold crates
+PASS: R7: the recorded solve ends at 21 moves and 7 pushes
+PASS: R8: setup move 0 succeeds
+PASS: R8: setup move 1 succeeds
+PASS: R8: setup move 2 succeeds
+PASS: R8: setup move 3 succeeds
+PASS: R8: setup move 4 succeeds
+PASS: R8: undo restores the last completed move
+PASS: R8: undo restores player, crates, counters and history depth
+PASS: R8: five moves can be undone
+PASS: R8: undoing every move restores the loaded start state
+PASS: R8: undo at the start is a no-op
+PASS: R8: the no-op undo leaves the start state unchanged
+PASS: R8: the 1000-move loop is legal
+PASS: R8: the undo history keeps at most 999 moves
+PASS: R8: undo restores the 999 retained moves
+PASS: R8: the dropped oldest entry leaves undo stopping at move 1
+PASS: R9: restart returns the loaded start state
+PASS: R9: restart clears the undo history and both counters
+PASS: R1: a free step lasts 0.12 s
+PASS: R1: a push lasts 0.16 s
+PASS: R1: a blocked bump lasts 0.10 s
+PASS: R1: a free step uses the step duration
+PASS: R1: a push uses the push duration
+PASS: R11: the buffer starts empty
+PASS: R11: a move buffers while one animates
+PASS: R11: a newer press replaces the buffered move
+PASS: R11: the buffer holds only one move
+PASS: R11: the buffer can be cleared
+PASS: R11: a blocked buffered move is refused
+PASS: R11: a blocked buffered move changes no cell and no counter
+PASS: R11: a blocked buffered move still turns the player
+PASS: R10: pausing during an animation snaps it to its end
+PASS: R10: the pause freezes after the snap
+PASS: R10: the pause clears the buffered move
+PASS: R10: resume leaves the pause
+PASS: R10: pause without an animation still pauses
+PASS: HUD: the level number is shown
+PASS: HUD: the move counter is shown
+PASS: HUD: the push counter is shown
+ERROR: level 'bad-no-solution': solution must be a string of U/D/L/R moves
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:206)
+       [1] _read_solution (res://src/level_loader.gd:140)
+       [2] _parse (res://src/level_loader.gd:60)
+       [3] load_level (res://src/level_loader.gd:38)
+       [4] _test_level_solution_contract (res://tests/run_tests.gd:351)
+       [5] _init (res://tests/run_tests.gd:50)
+PASS: a level without a solution is rejected
+PASS: the missing-solution error names the contract
+ERROR: level 'bad-solution-char': solution has unknown move 'X'
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:206)
+       [1] _read_solution (res://src/level_loader.gd:149)
+       [2] _parse (res://src/level_loader.gd:60)
+       [3] load_level (res://src/level_loader.gd:38)
+       [4] _test_level_solution_contract (res://tests/run_tests.gd:357)
+       [5] _init (res://tests/run_tests.gd:50)
+PASS: a solution with an unknown move is rejected
+PASS: the bad-solution error names the move
+PASS: level-001.json loads and validates
+PASS: level-001.json keeps its id
+PASS: level-001.json is inside the 5x5-16x16 range
+PASS: level-001.json has one crate per goal
+PASS: level-001.json carries a recorded solution
+PASS: level-001.json starts with no crate on a goal (design R2)
+PASS: level-001.json does not start solved
+PASS: level-001.json solution has no blocked move
+PASS: level-001.json recorded solution solves the level
+PASS: level-002.json loads and validates
+PASS: level-002.json keeps its id
+PASS: level-002.json is inside the 5x5-16x16 range
+PASS: level-002.json has one crate per goal
+PASS: level-002.json carries a recorded solution
+PASS: level-002.json starts with no crate on a goal (design R2)
+PASS: level-002.json does not start solved
+PASS: level-002.json solution has no blocked move
+PASS: level-002.json recorded solution solves the level
+PASS: level-003.json loads and validates
+PASS: level-003.json keeps its id
+PASS: level-003.json is inside the 5x5-16x16 range
+PASS: level-003.json has one crate per goal
+PASS: level-003.json carries a recorded solution
+PASS: level-003.json starts with no crate on a goal (design R2)
+PASS: level-003.json does not start solved
+PASS: level-003.json solution has no blocked move
+PASS: level-003.json recorded solution solves the level
+PASS: level-004.json loads and validates
+PASS: level-004.json keeps its id
+PASS: level-004.json is inside the 5x5-16x16 range
+PASS: level-004.json has one crate per goal
+PASS: level-004.json carries a recorded solution
+PASS: level-004.json starts with no crate on a goal (design R2)
+PASS: level-004.json does not start solved
+PASS: level-004.json solution has no blocked move
+PASS: level-004.json recorded solution solves the level
+PASS: level-005.json loads and validates
+PASS: level-005.json keeps its id
+PASS: level-005.json is inside the 5x5-16x16 range
+PASS: level-005.json has one crate per goal
+PASS: level-005.json carries a recorded solution
+PASS: level-005.json starts with no crate on a goal (design R2)
+PASS: level-005.json does not start solved
+PASS: level-005.json solution has no blocked move
+PASS: level-005.json recorded solution solves the level
+PASS: level-006.json loads and validates
+PASS: level-006.json keeps its id
+PASS: level-006.json is inside the 5x5-16x16 range
+PASS: level-006.json has one crate per goal
+PASS: level-006.json carries a recorded solution
+PASS: level-006.json starts with no crate on a goal (design R2)
+PASS: level-006.json does not start solved
+PASS: level-006.json solution has no blocked move
+PASS: level-006.json recorded solution solves the level
+PASS: level-007.json loads and validates
+PASS: level-007.json keeps its id
+PASS: level-007.json is inside the 5x5-16x16 range
+PASS: level-007.json has one crate per goal
+PASS: level-007.json carries a recorded solution
+PASS: level-007.json starts with no crate on a goal (design R2)
+PASS: level-007.json does not start solved
+PASS: level-007.json solution has no blocked move
+PASS: level-007.json recorded solution solves the level
+PASS: level-008.json loads and validates
+PASS: level-008.json keeps its id
+PASS: level-008.json is inside the 5x5-16x16 range
+PASS: level-008.json has one crate per goal
+PASS: level-008.json carries a recorded solution
+PASS: level-008.json starts with no crate on a goal (design R2)
+PASS: level-008.json does not start solved
+PASS: level-008.json solution has no blocked move
+PASS: level-008.json recorded solution solves the level
+PASS: level-009.json loads and validates
+PASS: level-009.json keeps its id
+PASS: level-009.json is inside the 5x5-16x16 range
+PASS: level-009.json has one crate per goal
+PASS: level-009.json carries a recorded solution
+PASS: level-009.json starts with no crate on a goal (design R2)
+PASS: level-009.json does not start solved
+PASS: level-009.json solution has no blocked move
+PASS: level-009.json recorded solution solves the level
+PASS: level-010.json loads and validates
+PASS: level-010.json keeps its id
+PASS: level-010.json is inside the 5x5-16x16 range
+PASS: level-010.json has one crate per goal
+PASS: level-010.json carries a recorded solution
+PASS: level-010.json starts with no crate on a goal (design R2)
+PASS: level-010.json does not start solved
+PASS: level-010.json solution has no blocked move
+PASS: level-010.json recorded solution solves the level
+PASS: level-011.json loads and validates
+PASS: level-011.json keeps its id
+PASS: level-011.json is inside the 5x5-16x16 range
+PASS: level-011.json has one crate per goal
+PASS: level-011.json carries a recorded solution
+PASS: level-011.json starts with no crate on a goal (design R2)
+PASS: level-011.json does not start solved
+PASS: level-011.json solution has no blocked move
+PASS: level-011.json recorded solution solves the level
+PASS: level-012.json loads and validates
+PASS: level-012.json keeps its id
+PASS: level-012.json is inside the 5x5-16x16 range
+PASS: level-012.json has one crate per goal
+PASS: level-012.json carries a recorded solution
+PASS: level-012.json starts with no crate on a goal (design R2)
+PASS: level-012.json does not start solved
+PASS: level-012.json solution has no blocked move
+PASS: level-012.json recorded solution solves the level
+PASS: all twelve campaign level files load
+PASS: level-001 keeps its 9x9 grid
+PASS: level-001 keeps its far and side walls with the near edge open
+PASS: level-001 keeps its three goals
+PASS: level-001 keeps its three crate cells
+PASS: level-001 keeps its player spawn
+PASS: a fresh campaign starts with only level 1 unlocked
+PASS: the fresh frontier is exactly level 1
+PASS: a locked level cannot unlock the next
+PASS: solving level 1 unlocks level 2
+PASS: level 2 opens and level 3 stays locked
+PASS: replaying level 1 does not unlock past the frontier
+PASS: replaying level 1 keeps the frontier
+PASS: solving level 2 unlocks level 3
+PASS: replaying an old level never removes an unlock
+PASS: the frontier stays at level 3
+PASS: solving the last level has no next level
+PASS: the last level keeps the frontier at 12
+PASS: a missing progress file starts at level 1
+PASS: the persistence fixture unlocks level 2
+PASS: progress saves to user://
+PASS: the progress file is JSON
+PASS: the progress file carries format version 1
+PASS: the progress file stores the frontier
+PASS: a saved frontier loads in a new session
+PASS: a later frontier saves again
+PASS: the second save round-trips
+PASS: a frontier above 12 clamps to 12
+PASS: a frontier below 1 clamps to 1
+ERROR: Parse JSON failed. Error at line 0: Expected 'true', 'false', or 'null', got 'not'
+   at: parse_string (core/io/json.cpp:629)
+   GDScript backtrace (most recent call first):
+       [0] load_progress (res://src/campaign_progress.gd:27)
+       [1] _test_progress_persistence (res://tests/run_tests.gd:493)
+       [2] _init (res://tests/run_tests.gd:54)
+WARNING: campaign: ignoring malformed progress file user://campaign_test.json
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_progress (res://src/campaign_progress.gd:29)
+         [1] _test_progress_persistence (res://tests/run_tests.gd:493)
+         [2] _init (res://tests/run_tests.gd:54)
+PASS: a malformed progress file falls back to level 1
+WARNING: campaign: ignoring progress file version 99 at user://campaign_test.json
+     at: push_warning (core/variant/variant_utility.cpp:1033)
+     GDScript backtrace (most recent call first):
+         [0] load_progress (res://src/campaign_progress.gd:37)
+         [1] _test_progress_persistence (res://tests/run_tests.gd:498)
+         [2] _init (res://tests/run_tests.gd:54)
+PASS: an unknown progress format falls back to level 1
+PASS: the level select lists all twelve levels
+PASS: levels at or below the frontier show as unlocked
+PASS: levels past the frontier show as locked
+PASS: only an unlocked level can be started
+PASS: a solved level shows the level-solved title
+PASS: a solved level offers the next level
+PASS: the results card offers level select
+PASS: the last level shows the campaign finished
+PASS: the campaign finished state has no next level
+PASS: the campaign finished state still offers level select
+PASS: the --demo=select flag is parsed
+PASS: the --demo=win flag is parsed
+PASS: a normal run has no demo mode
+PASS: the select demo leaves later levels locked
+PASS: scenes/main.tscn exists
+PASS: scenes/main.tscn loads as a PackedScene
+PASS: main scene root is a Node3D
+PASS: main scene root is named Main
+PASS: main scene root runs src/game.gd
+PASS: main scene has a Board
+PASS: main scene has a Camera3D
+PASS: main scene has the HUD
+PASS: main scene has the pause overlay
+PASS: main scene has the results card
+PASS: main scene has the level select
+PASS: the level select runs src/level_select.gd
+PASS: main scene is registered in project.godot
+PASS: StudioCapture autoload points at the capture addon
+PASS: viewport width is 1152
+PASS: viewport height is 648
+PASS: 265 checks passed
+[test] PASS

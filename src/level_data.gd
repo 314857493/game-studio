@@ -12,6 +12,8 @@ var walls: Dictionary = {}
 var goals: Array[Vector2i] = []
 var crates: Array[Vector2i] = []
 var player: Vector2i = Vector2i.ZERO
+## Recorded solve as a string of U/D/L/R moves; replayed by the build check.
+var solution: String = ""
 var error: String = ""
 
 

@@ -1,0 +1,5 @@
+[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-004-campaign-94c56c69e5af/production/qa/evidence/story-004/story-004-1.png
+[capture] user arguments: --demo=select
+[capture] waiting up to 60s for the PNG
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-004-campaign-94c56c69e5af/production/qa/evidence/story-004/story-004-1.png --demo=select
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-004-campaign-94c56c69e5af/production/qa/evidence/story-004/story-004-1.png (32440 bytes)

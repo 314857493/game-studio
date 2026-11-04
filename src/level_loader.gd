@@ -2,7 +2,7 @@ extends RefCounted
 
 ## Single entry point for loading one Sokoban level from JSON.
 ##
-## The file shape is documented in assets/data/levels/level-001.schema.md.
+## The file shape is documented in assets/data/levels/level.schema.md.
 ## Invalid data is rejected with the level id in the error: the returned
 ## LevelData has is_valid() == false and its error names the level.
 
@@ -18,7 +18,9 @@ const KEY_TILES := "tiles"
 const KEY_GOALS := "goals"
 const KEY_CRATES := "crates"
 const KEY_PLAYER := "player"
+const KEY_SOLUTION := "solution"
 
+const SOLUTION_MOVES := "UDLR"
 const MIN_SIZE := 5
 const MAX_SIZE := 16
 
@@ -55,6 +57,8 @@ static func _parse(data: Dictionary, level: LevelData) -> LevelData:
 			level,
 			"crate count %d does not match goal count %d" % [level.crates.size(), level.goals.size()],
 		)
+	if not _read_solution(data, level):
+		return level
 	return level
 
 
@@ -125,6 +129,26 @@ static func _read_player(data: Dictionary, level: LevelData) -> bool:
 		_set_error(level, "player and crate share cell %s" % _cell_text(player))
 		return false
 	level.player = player
+	return true
+
+
+## The recorded solve is part of the level contract: a level without one is a
+## build error, so the loader rejects it instead of loading an unprovable level.
+static func _read_solution(data: Dictionary, level: LevelData) -> bool:
+	var value: Variant = data.get(KEY_SOLUTION)
+	if typeof(value) != TYPE_STRING:
+		_set_error(level, "solution must be a string of U/D/L/R moves")
+		return false
+	var text: String = value
+	if text.is_empty():
+		_set_error(level, "no recorded solution")
+		return false
+	for index in text.length():
+		var move: String = text[index]
+		if not SOLUTION_MOVES.contains(move):
+			_set_error(level, "solution has unknown move '%s'" % move)
+			return false
+	level.solution = text
 	return true
 
 

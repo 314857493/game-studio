@@ -3,11 +3,14 @@ extends Node3D
 ## Builds the 3D board for one level and applies the Sokoban movement rules.
 ##
 ## Implements story-001 (grid, movement, pushing), story-002 (win, undo,
-## restart) and story-003 (move animations, input buffer, pause, HUD) for
-## level-001. Level sequencing is out of scope.
+## restart), story-003 (move animations, input buffer, pause, HUD) and
+## story-004 (twelve-level campaign, unlocks, level select). The level select is
+## the launch screen; a level is loaded only when one is chosen.
 
-signal won(moves: int, pushes: int, seconds: float)
+signal won(moves: int, pushes: int, seconds: float, level_number: int)
 signal restarted()
+signal level_started(level_number: int)
+signal level_select_opened(highest_unlocked: int)
 signal hud_changed(moves: int, pushes: int, level_number: int)
 signal pause_changed(paused: bool)
 
@@ -16,9 +19,9 @@ const LevelLoader = preload("res://src/level_loader.gd")
 const SokobanModel = preload("res://src/sokoban_model.gd")
 const SokobanDemo = preload("res://src/sokoban_demo.gd")
 const GameFlow = preload("res://src/game_flow.gd")
+const CampaignProgress = preload("res://src/campaign_progress.gd")
 
-const LEVEL_PATH := "res://assets/data/levels/level-001.json"
-const LEVEL_NUMBER := 1
+const LEVEL_PATH_FORMAT := "res://assets/data/levels/level-%s.json"
 
 const ACTION_UP := &"move_up"
 const ACTION_DOWN := &"move_down"
@@ -73,8 +76,11 @@ const COLOR_AMBIENT := Color(0.55, 0.6, 0.75)
 var _level: LevelData
 var _model: SokobanModel
 var _flow: GameFlow
+var _campaign: CampaignProgress
+var _level_number: int = 0
 var _demo_mode: String = SokobanDemo.MODE_NONE
 var _won: bool = false
+var _select_open: bool = false
 var _started_at_msec: int = 0
 var _active_tween: Tween
 var _active_push: bool = false
@@ -98,20 +104,21 @@ func _ready() -> void:
 	_setup_camera()
 	_create_materials()
 	_register_actions()
-	var level: LevelData = LevelLoader.load_level(LEVEL_PATH)
-	if not level.is_valid():
-		push_error("playable core: %s" % level.error)
-		return
-	_level = level
-	_flow = GameFlow.new()
-	_model = SokobanModel.new()
-	_model.setup(level)
-	_started_at_msec = Time.get_ticks_msec()
-	_build_board(level)
-	_update_goal_rings()
-	_update_player()
-	_emit_hud()
+	_campaign = CampaignProgress.new()
 	_demo_mode = SokobanDemo.requested()
+	if _demo_mode == SokobanDemo.MODE_SELECT:
+		_campaign.set_highest_unlocked(SokobanDemo.SELECT_UNLOCKED_LEVELS)
+		_open_level_select()
+		return
+	if _demo_mode != SokobanDemo.MODE_NONE:
+		_start_level(1)
+		_apply_requested_demo()
+		return
+	_campaign.load_progress()
+	_open_level_select()
+
+
+func _apply_requested_demo() -> void:
 	if _demo_mode == SokobanDemo.MODE_PUSHED:
 		_apply_demo(SokobanDemo.pushed_moves())
 	elif _demo_mode == SokobanDemo.MODE_WIN:
@@ -123,11 +130,12 @@ func _ready() -> void:
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and _demo_mode == SokobanDemo.MODE_NONE:
-		_set_paused(true)
+		if _level_number > 0 and not _select_open:
+			_set_paused(true)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _model == null or _flow == null:
+	if _model == null or _flow == null or _select_open or _level_number < 1:
 		return
 	if event is InputEventKey and (event as InputEventKey).is_echo():
 		return
@@ -258,14 +266,17 @@ func _set_paused(paused: bool) -> void:
 	pause_changed.emit(paused)
 
 
-## R7: the completed move put a crate on every goal, so lock input and tell
-## the results card.
+## R7 + R12: lock input, persist the new unlock, then tell the results card.
 func _win() -> void:
 	if _won:
 		return
 	_won = true
+	var unlocked: bool = _campaign.mark_solved(_level_number)
+	if unlocked and _demo_mode == SokobanDemo.MODE_NONE:
+		if not _campaign.save_progress():
+			push_warning("campaign: could not persist unlock past level %d" % _level_number)
 	var elapsed: float = maxf(0.0, float(Time.get_ticks_msec() - _started_at_msec) / 1000.0)
-	won.emit(_model.move_count, _model.push_count, elapsed)
+	won.emit(_model.move_count, _model.push_count, elapsed, _level_number)
 
 
 ## R8: snap any in-flight move, then take the last completed move back.
@@ -283,29 +294,67 @@ func _undo() -> void:
 	_emit_hud()
 
 
-## R9: rebuild the level from its loaded start state and hide the card.
+## R9: reload the current level from its file and hide the card.
 func _restart() -> void:
-	if _level == null or _model == null or _flow == null:
+	if _level_number < 1:
+		return
+	_start_level(_level_number)
+	restarted.emit()
+
+
+## Loads one campaign level, rebuilds the board and hides the menus. The
+## campaign frontier is never changed here; only a win unlocks the next level.
+func _start_level(level_number: int) -> void:
+	var path: String = LEVEL_PATH_FORMAT % str(level_number).pad_zeros(3)
+	var level: LevelData = LevelLoader.load_level(path)
+	if not level.is_valid():
+		push_error("campaign: %s" % level.error)
 		return
 	if _active_tween != null:
 		_active_tween.kill()
 		_active_tween = null
-	_flow.clear_buffer()
-	_flow.end_animation()
-	_flow.resume()
+	_level = level
+	_level_number = level_number
+	_select_open = false
+	_won = false
 	_active_push = false
 	_active_crate_from = Vector2i(-1, -1)
 	_active_crate_to = Vector2i(-1, -1)
-	_model.setup(_level)
+	_model = SokobanModel.new()
+	_model.setup(level)
+	_flow = GameFlow.new()
+	_started_at_msec = Time.get_ticks_msec()
 	_clear_board()
-	_build_board(_level)
+	_build_board(level)
 	_update_goal_rings()
 	_update_player()
-	_won = false
-	_started_at_msec = Time.get_ticks_msec()
 	_emit_hud()
-	restarted.emit()
 	pause_changed.emit(false)
+	level_started.emit(level_number)
+
+
+func _open_level_select() -> void:
+	if _campaign == null:
+		return
+	_select_open = true
+	level_select_opened.emit(_campaign.highest_unlocked)
+
+
+func _on_level_chosen(level_number: int) -> void:
+	if _campaign == null or not _campaign.is_unlocked(level_number):
+		return
+	_start_level(level_number)
+
+
+func _on_next_level_requested() -> void:
+	var next_level: int = _level_number + 1
+	if _campaign == null or not _campaign.is_unlocked(next_level):
+		return
+	_start_level(next_level)
+
+
+func _on_level_select_requested() -> void:
+	_open_level_select()
 
 
 ## Runs a fixed screenshot sequence and snaps each move, so the capture lands
@@ -318,7 +367,7 @@ func _apply_demo(moves: Array) -> void:
 
 
 func _emit_hud() -> void:
-	hud_changed.emit(_model.move_count, _model.push_count, LEVEL_NUMBER)
+	hud_changed.emit(_model.move_count, _model.push_count, _level_number)
 
 
 func _clear_board() -> void:

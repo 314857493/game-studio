@@ -1,0 +1,8 @@
+# Evidence: story-004
+
+Run result: OBSERVED — the 1152x648 `--demo=select` frame shows the level-select screen with all twelve levels listed: levels 1–5 are enabled and labelled "Unlocked", levels 6–12 are disabled and labelled "Locked", and Level 1 holds the focus ring.
+
+- `story-004-1.png` — `python scripts/studio.py capture --out production/qa/evidence/story-004/story-004-1.png -- --demo=select`: the campaign level select at launch; the 4x3 grid lists "Level 1 — Unlocked" through "Level 5 — Unlocked", then "Level 6 — Locked" through "Level 12 — Locked", with "Select a level" as the title.
+- `check.log` — `python scripts/studio.py check` output: exit 0, `[check] import OK`, and `[check] parsed 8 changed script(s)` for the campaign, level-select, loader and test scripts.
+- `test.log` — `python scripts/studio.py test` output: exit 0, `PASS: 265 checks passed`. It covers the recorded solution replay for all twelve campaign levels (no blocked move, every goal occupied), the level-001 board being unchanged apart from its new `solution` field, the unlock boundary and replay-safe frontier, the `user://campaign.json` persistence format with round-trip, clamping and malformed-file fallbacks, the twelve level-select entries and their locked states, the results-card next-level and campaign-finished states, and the `--demo=select` flag. The `ERROR`/`WARNING` lines in the log are the expected loader rejections (`bad-*.json` fixtures) and the deliberately corrupt progress files exercised by the persistence test.
+- `capture.log` — `python scripts/studio.py capture --out production/qa/evidence/story-004/story-004-1.png -- --demo=select` output: exit 0, a 1152x648 PNG of 32440 bytes, user arguments `--demo=select`.
