@@ -1,0 +1,6 @@
+[capture] removed stale file: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-005-overlays-9d3cd75bb85f/production/qa/evidence/story-005/story-005-pause.png
+[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-005-overlays-9d3cd75bb85f/production/qa/evidence/story-005/story-005-pause.png
+[capture] user arguments: --demo=pause
+[capture] waiting up to 60s for the PNG
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-005-overlays-9d3cd75bb85f/production/qa/evidence/story-005/story-005-pause.png --demo=pause
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-005-overlays-9d3cd75bb85f/production/qa/evidence/story-005/story-005-pause.png (52444 bytes)

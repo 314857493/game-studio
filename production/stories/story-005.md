@@ -1,6 +1,6 @@
 ---
 id: story-005
-status: ready
+status: done
 updated: 2026-11-04
 ---
 
@@ -16,17 +16,17 @@ the puzzle easier to read, never hide it.
 
 ## Acceptance
 
-- [ ] **Results card.** When a level is solved, every crate on its goal stays visible in the
+- [x] **Results card.** When a level is solved, every crate on its goal stays visible in the
       same 1152x648 frame as the card. The card's backdrop is either translucent enough to
       read the board through it or sized and placed so it does not cover the board.
-- [ ] **Pause overlay.** The same rule holds while paused: the board under the overlay stays
+- [x] **Pause overlay.** The same rule holds while paused: the board under the overlay stays
       readable, including a crate already on a goal.
-- [ ] **No regression.** The cards keep showing the values they show today (moves, pushes,
+- [x] **No regression.** The cards keep showing the values they show today (moves, pushes,
       time on the results card; the resume hint on the pause overlay), and the HUD, undo,
       restart and buffering behave exactly as before.
-- [ ] **Evidence frames.** `capture_command` with `-- --demo=win` and with `-- --demo=pause`
+- [x] **Evidence frames.** `capture_command` with `-- --demo=win` and with `-- --demo=pause`
       both capture frames where the board is still readable behind the card.
-- [ ] `python scripts/studio.py check` and `python scripts/studio.py test` exit 0, with the
+- [x] `python scripts/studio.py check` and `python scripts/studio.py test` exit 0, with the
       existing suite still passing.
 
 ## Out of scope
