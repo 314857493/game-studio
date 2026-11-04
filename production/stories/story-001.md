@@ -1,7 +1,7 @@
 ---
 id: story-001
 status: done
-updated: 2026-11-03
+updated: 2026-11-04
 ---
 
 # Story: Playable core — grid, movement and pushing
@@ -15,7 +15,8 @@ rest of the rules come later.
 
 Visual direction follows the design's proposed "minimal geometric diorama":
 pale stone floor tiles, slate wall blocks, warm orange crates, and glowing
-sockets for goals. Camera sits at a fixed 40° pitch with yaw 0 over the level.
+sockets for goals. Camera sits at a fixed 55° pitch and 45° yaw (the isometric
+corner view) over the level.
 
 The screenshot-only `--demo=pushed` flag applies a fixed push sequence so the
 evidence frame shows one placed crate. Normal runs never execute it.
@@ -35,7 +36,9 @@ evidence frame shows one placed crate. Normal runs never execute it.
       turns to face that direction.
 - [x] `capture_command` run with `-- --demo=pushed` captures a frame where exactly one
       crate is on a goal and another goal is visibly empty; floor, walls, crates and the
-      player stay distinguishable in the same 1152x648 3D frame.
+      player stay distinguishable in the same 1152x648 3D frame, rendered at a 55° pitch
+      and 45° yaw isometric view: the board reads as a diamond with the two far slate
+      walls visible and the near side cut open.
 - [x] `python scripts/studio.py check` and `python scripts/studio.py test` both exit 0;
       the headless tests cover the three loader rejections, R4, R5 and R6, and the
       `--demo=pushed` sequence ends with exactly one crate on a goal and the other goals
