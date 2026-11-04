@@ -39,16 +39,16 @@ const CAMERA_SIZE := 12.0
 const CAMERA_NEAR := 0.05
 const CAMERA_FAR := 100.0
 const SUN_ROTATION_DEGREES := Vector3(-55.0, -30.0, 0.0)
-const SUN_ENERGY := 1.2
-const AMBIENT_ENERGY := 0.6
+const SUN_ENERGY := 0.7
+const AMBIENT_ENERGY := 0.28
 
 const ROUGHNESS_FLOOR := 0.95
 const ROUGHNESS_WALL := 0.85
 const ROUGHNESS_CRATE := 0.55
 const ROUGHNESS_PLAYER := 0.6
 
-const COLOR_FLOOR_LIGHT := Color("c9c0ad")
-const COLOR_FLOOR_DARK := Color("b8ae98")
+const COLOR_FLOOR_LIGHT := Color("cdc0a6")
+const COLOR_FLOOR_DARK := Color("8b7f68")
 const COLOR_WALL := Color("3a4050")
 const COLOR_CRATE := Color("e0701c")
 const COLOR_PLAYER := Color("2f8fdc")
