@@ -18,7 +18,7 @@ The level appears as a compact diorama: pale stone floor tiles, slate wall block
 
 The loop: read the room, plan the order of pushes, execute one tile at a time, undo the wrong push as soon as it is seen, and watch the last crate click into place. The win is quiet: the sockets brighten, the results card shows moves, pushes, and time, and the next level is one confirm away. The 3D layer carries two readability promises: every crate on a goal shows a lit base ring, and every wall or crate edge that occludes a walkable tile casts a shadow that makes the blocking edge visible.
 
-Movement is screen-relative from the fixed camera, so the controls stay identical to a 2D Sokoban: up moves away from the camera, down toward it, left and right along the screen. The camera never rotates during play, so the mapping never changes mid-puzzle.
+Movement stays grid-native: up moves one cell north (-Z), down south (+Z), left west (-X), right east (+X), whatever the camera does. The camera is fixed during play, so the mapping never changes mid-puzzle. Because the default yaw is 45 degrees, each cardinal direction reads as a screen diagonal: north up-right, west up-left, south down-left, east down-right. A screen-aligned mapping is impossible for a square grid seen at 45 degrees, so the four corners are what players learn in their first minutes.
 
 ## Rules
 
@@ -46,7 +46,7 @@ R11. **Input buffer.** At most one move is buffered while a move animation plays
 
 R12. **Level sequence.** Levels run in level-file order and unlock one at a time; solving a level unlocks the next and persists the unlock between sessions. The level-select screen only starts unlocked levels. There is no level-fail state: a stuck player always has undo and restart.
 
-R13. **Camera.** Each level defines a fixed yaw of 0, 90, 180, or 270 degrees, and pitch is fixed. The MVP camera does not orbit or follow the player, and gameplay never requires rotating it. Mouse input is not used for movement in the MVP.
+R13. **Camera.** Each level defines a fixed yaw in multiples of 45 degrees (45 is the default and gives the isometric corner view), and the pitch is fixed at 55 degrees. The MVP camera does not orbit or follow the player, and gameplay never requires rotating it. Mouse input is not used for movement in the MVP.
 
 ## Numbers and tuning
 
@@ -64,8 +64,8 @@ The issue fixes none of these values. They are this page's proposal for the firs
 | Input buffer depth | 1 | 0-2 | moves | Player controller; deeper feels laggy |
 | Undo depth | 999 | 50-999 | moves | Session model; practical infinity |
 | Undo latency | 0.1 | 0.0-0.1 | seconds | Session model; must feel instant |
-| Camera pitch | 40 | 25-60 | degrees | Camera rig; a low pitch hides goals behind walls |
-| Camera yaw per level | 0 | 0/90/180/270 | degrees | Level data; fixed for the level |
+| Camera pitch | 55 | 40-70 | degrees | Camera rig; higher reads more top-down, lower keeps more wall height |
+| Camera yaw per level | 45 | any multiple of 45 | degrees | Level data; 45 is the isometric corner view, 0 faces the board head-on |
 | Camera framing margin | 1.0 | 0.5-2.0 | cells | Camera rig; keeps outer walls visible |
 | Level intro | 0.3 | 0.0-0.8 | seconds | HUD; level number before control |
 | Win effect | 1.2 | 0.5-2.0 | seconds | HUD; before the results card |
@@ -90,7 +90,7 @@ The issue fixes none of these values. They are this page's proposal for the firs
 
 - **Vision pillar.** design/vision.md is still its template and has no pillars. Adopt "Readable depth" (3D framing makes the solution easier to read) as the pillar this page serves? Owner: creative director.
 - **Scope.** Is the first playable 12 levels and a 10-15 minute session, or a smaller 6-level prototype? Default proposed: 12 levels. Owner: producer.
-- **Camera.** Fixed yaw per level (proposed), free mouse orbit, or four yaw presets the player can rotate? Orbit adds a control problem and no puzzle value in the MVP. Owner: creative director with game-designer.
+- ~~**Camera.**~~ **Decided:** fixed yaw per level, 45 degrees by default, pitch 55 degrees; no orbit, no presets. (Owner: creative director with game-designer.)
 - **Art direction.** Minimal geometric diorama (proposed) or a character-led, story-framed Sokoban? The choice changes the crates, goals, and player figure. Owner: creative director.
 - **Timing and scoring.** No timer and no per-level score (proposed), or a timed/par-score mode with leaderboards? Owner: game-designer with producer.
 - **Terrain extensions.** Holes, ice, one-way tiles, and multi-height ramps are out of the MVP. Are any of them required for the first release? Owner: producer.
