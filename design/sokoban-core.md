@@ -89,13 +89,13 @@ The issue fixes none of these values. They are this page's proposal for the firs
 ## Open questions
 
 - **Vision pillar.** design/vision.md is still its template and has no pillars. Adopt "Readable depth" (3D framing makes the solution easier to read) as the pillar this page serves? Owner: creative director.
-- **Scope.** Is the first playable 12 levels and a 10-15 minute session, or a smaller 6-level prototype? Default proposed: 12 levels. Owner: producer.
+- ~~**Scope.**~~ **Decided:** 12 levels, a 10-15 minute session. (Owner: producer.)
 - ~~**Camera.**~~ **Decided:** fixed yaw per level, 45 degrees by default, pitch 55 degrees; no orbit, no presets. (Owner: creative director with game-designer.)
 - **Art direction.** Minimal geometric diorama (proposed) or a character-led, story-framed Sokoban? The choice changes the crates, goals, and player figure. Owner: creative director.
 - **Timing and scoring.** No timer and no per-level score (proposed), or a timed/par-score mode with leaderboards? Owner: game-designer with producer.
 - **Terrain extensions.** Holes, ice, one-way tiles, and multi-height ramps are out of the MVP. Are any of them required for the first release? Owner: producer.
 - **Input devices.** Keyboard only in the MVP (proposed), or gamepad support before the first playable? Owner: producer.
-- **Level validation.** Does the level pipeline include a build-time solver that proves every level solvable, or is a hand-recorded solution per level enough? Owner: tech director.
+- ~~**Level validation.**~~ **Decided:** every shipped level carries a recorded solution, and a headless test replays it to prove the level is solvable; no build-time solver. (Owner: tech director.)
 - **Presentation scope.** Are audio and Chinese/English localization required in the first playable? The issue does not say. Owner: producer with creative director.
 
 ## Links
