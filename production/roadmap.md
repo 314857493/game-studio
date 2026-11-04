@@ -4,8 +4,8 @@ A plan, not a promise. The producer updates this file; everyone else reads it.
 
 | Milestone | Target date | Status | What ships | Owner |
 |---|---|---|---|---|
-| _M1 Playable core_ | 2026-03-06 | planned | _One line: the slice a player can try._ | producer |
-| _M2 First vertical slice_ | 2026-04-17 | planned | _One line: what becomes real._ | producer |
+| _M1 Playable core_ | 2026-11-04 | done | The twelve-level campaign: grid rules R1–R13, isometric 3D board, undo/restart/pause, HUD, results card, level select with persisted unlocks. Evidence: story-001 … story-004. | producer |
+| _M2 First vertical slice_ | 2026-11-04 | cut | Not built: the MVP ships as a single self-contained campaign, so a second slice has nothing to add without new content or a new pillar. | producer |
 
 Status values:
 

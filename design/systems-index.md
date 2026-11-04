@@ -4,7 +4,7 @@ One row per system. Add the row in the same pull request that adds the design do
 
 | System | Owner | Status | Doc | Summary | Depends on |
 |---|---|---|---|---|---|
-| Sokoban core | game-designer | in review | design/sokoban-core.md | Classic crate-pushing on a grid with a fixed-camera 3D presentation, practically unlimited undo, and a 12-level sequence. | No system yet; the vision pillars and the camera/level pipeline are open questions. |
+| Sokoban core | game-designer | shipped | design/sokoban-core.md | Classic crate-pushing on a grid with a fixed isometric 3D presentation, instant undo and restart, and a twelve-level campaign with unlocks. Evidence: production/qa/evidence/story-001 … story-004. | Nothing below it; it serves the **Readable depth** pillar of the vision. |
 
 Status values:
 

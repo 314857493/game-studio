@@ -2,7 +2,7 @@
 
 _Grid movement, crate pushing, and the one-screen puzzle loop for the 3D Sokoban game. Owner: game-designer._
 
-Serves the proposed pillar **Readable depth**: the 3D view must make a puzzle easier to read, never hide it. The pillar is a proposal because design/vision.md is still its template (see Open questions).
+Serves the **Readable depth** pillar of [vision.md](vision.md): the 3D view must make a puzzle easier to read, never hide it.
 
 ## Goals
 
@@ -88,7 +88,7 @@ The issue fixes none of these values. They are this page's proposal for the firs
 
 ## Open questions
 
-- **Vision pillar.** design/vision.md is still its template and has no pillars. Adopt "Readable depth" (3D framing makes the solution easier to read) as the pillar this page serves? Owner: creative director.
+- ~~**Vision pillar.**~~ **Decided:** [vision.md](vision.md) now states the pillars, and this page serves **Readable depth**. (Owner: creative director.)
 - ~~**Scope.**~~ **Decided:** 12 levels, a 10-15 minute session. (Owner: producer.)
 - ~~**Camera.**~~ **Decided:** fixed yaw per level, 45 degrees by default, pitch 55 degrees; no orbit, no presets. (Owner: creative director with game-designer.)
 - **Art direction.** Minimal geometric diorama (proposed) or a character-led, story-framed Sokoban? The choice changes the crates, goals, and player figure. Owner: creative director.
