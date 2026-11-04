@@ -1,0 +1,5 @@
+[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-002/story-002-1.png
+[capture] user arguments: --demo=win
+[capture] waiting up to 60s for the PNG
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-002/story-002-1.png --demo=win
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-002/story-002-1.png (46270 bytes)
