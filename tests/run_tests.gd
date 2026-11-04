@@ -1,7 +1,7 @@
 extends SceneTree
 
-## Headless checks for the playable core (story-001) and the finish/recover
-## slice (story-002).
+## Headless checks for the playable core (story-001), the finish/recover slice
+## (story-002) and the game-feel slice (story-003).
 ##
 ## Run with:
 ##   godot --headless --path . -s res://tests/run_tests.gd
@@ -13,6 +13,8 @@ const LevelData = preload("res://src/level_data.gd")
 const LevelLoader = preload("res://src/level_loader.gd")
 const SokobanModel = preload("res://src/sokoban_model.gd")
 const SokobanDemo = preload("res://src/sokoban_demo.gd")
+const GameFlow = preload("res://src/game_flow.gd")
+const HUD_SCRIPT = preload("res://src/hud.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
 const FIXTURE_DIR := "res://tests/fixtures/"
@@ -34,6 +36,11 @@ func _init() -> void:
 	_test_undo_fidelity()
 	_test_history_bound()
 	_test_restart()
+	_test_animation_durations()
+	_test_buffer_rules()
+	_test_blocked_buffered()
+	_test_pause_mid_animation()
+	_test_hud_values()
 	_test_main_scene()
 	_test_project_settings()
 
@@ -236,6 +243,65 @@ func _test_restart() -> void:
 	_check(model.history_size() == 0 and model.move_count == 0 and model.push_count == 0, "R9: restart clears the undo history and both counters")
 
 
+func _test_animation_durations() -> void:
+	var flow := GameFlow.new()
+	_check(is_equal_approx(GameFlow.MOVE_DURATION, 0.12), "R1: a free step lasts 0.12 s")
+	_check(is_equal_approx(GameFlow.PUSH_DURATION, 0.16), "R1: a push lasts 0.16 s")
+	_check(is_equal_approx(GameFlow.BUMP_DURATION, 0.10), "R1: a blocked bump lasts 0.10 s")
+	_check(is_equal_approx(flow.move_duration(false), 0.12), "R1: a free step uses the step duration")
+	_check(is_equal_approx(flow.move_duration(true), 0.16), "R1: a push uses the push duration")
+
+
+func _test_buffer_rules() -> void:
+	var flow := GameFlow.new()
+	_check(not flow.has_buffered(), "R11: the buffer starts empty")
+	flow.buffer_move(SokobanModel.DIR_RIGHT)
+	_check(flow.has_buffered(), "R11: a move buffers while one animates")
+	flow.buffer_move(SokobanModel.DIR_UP)
+	_check(flow.take_buffered() == SokobanModel.DIR_UP, "R11: a newer press replaces the buffered move")
+	_check(not flow.has_buffered(), "R11: the buffer holds only one move")
+	flow.buffer_move(SokobanModel.DIR_LEFT)
+	flow.clear_buffer()
+	_check(not flow.has_buffered(), "R11: the buffer can be cleared")
+
+
+func _test_blocked_buffered() -> void:
+	var flow := GameFlow.new()
+	flow.buffer_move(SokobanModel.DIR_RIGHT)
+	var model := _make_model(5, 5, Vector2i(2, 2), [], [Vector2i(3, 2)])
+	var moved: bool = model.try_move(flow.take_buffered())
+	_check(not moved, "R11: a blocked buffered move is refused")
+	_check(
+		model.player == Vector2i(2, 2) and model.move_count == 0 and model.push_count == 0,
+		"R11: a blocked buffered move changes no cell and no counter",
+	)
+	_check(model.facing == SokobanModel.DIR_RIGHT, "R11: a blocked buffered move still turns the player")
+
+
+func _test_pause_mid_animation() -> void:
+	var flow := GameFlow.new()
+	flow.begin_animation()
+	flow.buffer_move(SokobanModel.DIR_RIGHT)
+	var snapped: bool = flow.pause()
+	_check(snapped, "R10: pausing during an animation snaps it to its end")
+	_check(not flow.is_animating() and flow.is_paused(), "R10: the pause freezes after the snap")
+	_check(not flow.has_buffered(), "R10: the pause clears the buffered move")
+	flow.resume()
+	_check(not flow.is_paused(), "R10: resume leaves the pause")
+	var idle := GameFlow.new()
+	_check(idle.pause() == false and idle.is_paused(), "R10: pause without an animation still pauses")
+
+
+func _test_hud_values() -> void:
+	var hud = HUD_SCRIPT.new()
+	hud._on_state_changed(3, 2, 1)
+	var texts: Dictionary = hud.snapshot()
+	_check(texts["level"] == "Level 1", "HUD: the level number is shown")
+	_check(texts["moves"] == "Moves: 3", "HUD: the move counter is shown")
+	_check(texts["pushes"] == "Pushes: 2", "HUD: the push counter is shown")
+	hud.free()
+
+
 func _same_state(left: SokobanModel, right: SokobanModel) -> bool:
 	if left.player != right.player:
 		return false
@@ -281,6 +347,8 @@ func _test_main_scene() -> void:
 	_check(attached != null and attached.resource_path == "res://src/game.gd", "main scene root runs src/game.gd")
 	_check(root.get_node_or_null("Board") is Node3D, "main scene has a Board")
 	_check(root.get_node_or_null("Camera") is Camera3D, "main scene has a Camera3D")
+	_check(root.get_node_or_null("HUD") is CanvasLayer, "main scene has the HUD")
+	_check(root.get_node_or_null("PauseOverlay") is CanvasLayer, "main scene has the pause overlay")
 	_check(root.get_node_or_null("ResultsCard") is CanvasLayer, "main scene has the results card")
 	root.free()
 
