@@ -31,10 +31,13 @@ const PANEL_BORDER_WIDTH := 2
 const PANEL_CORNER_RADIUS := 10
 
 const TEXT_COLOR := Color("edf0f7")
-const PANEL_COLOR := Color(0.07, 0.08, 0.12, 0.94)
+## The solved board must stay readable through the card (design/vision.md,
+## Readable depth), so the backdrop is a translucent tint, not a near-opaque panel.
+const PANEL_COLOR := Color(0.07, 0.08, 0.12, 0.4)
 const PANEL_BORDER_COLOR := Color("49d7ff")
 
 var _overlay: Control
+var _panel_style: StyleBoxFlat
 var _title: Label
 var _stats: Label
 var _hint: Label
@@ -92,6 +95,7 @@ func snapshot() -> Dictionary:
 		"hint": _hint.text,
 		"next_visible": _next_button.visible,
 		"select_visible": _select_button.visible,
+		"panel_alpha": _panel_style.bg_color.a,
 	}
 
 
@@ -106,7 +110,8 @@ func _ensure_built() -> void:
 	_overlay.add_child(center)
 	var panel := PanelContainer.new()
 	panel.custom_minimum_size = PANEL_MIN_SIZE
-	panel.add_theme_stylebox_override("panel", _make_panel_style())
+	_panel_style = _make_panel_style()
+	panel.add_theme_stylebox_override("panel", _panel_style)
 	center.add_child(panel)
 	var margin := MarginContainer.new()
 	_set_margins(margin)

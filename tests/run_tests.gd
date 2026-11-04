@@ -19,6 +19,7 @@ const CampaignProgress = preload("res://src/campaign_progress.gd")
 const HUD_SCRIPT = preload("res://src/hud.gd")
 const LEVEL_SELECT_SCRIPT = preload("res://src/level_select.gd")
 const RESULTS_CARD_SCRIPT = preload("res://src/results_card.gd")
+const PAUSE_OVERLAY_SCRIPT = preload("res://src/pause_overlay.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
 const LEVEL_DIR := "res://assets/data/levels/"
@@ -26,6 +27,12 @@ const FIXTURE_DIR := "res://tests/fixtures/"
 const MAIN_SCENE_PATH := "res://scenes/main.tscn"
 const CAPTURE_SCRIPT_PATH := "res://addons/studio_capture/capture.gd"
 const PROGRESS_TEST_PATH := "user://campaign_test.json"
+
+## Readability budget from story-005: a backdrop above this alpha would hide the
+## board it covers, and the board must keep at least half its brightness.
+const MAX_PANEL_ALPHA := 0.5
+const MAX_DIM_ALPHA := 0.25
+const MIN_BOARD_VISIBILITY := 0.5
 
 var _passed := 0
 var _failed := 0
@@ -54,6 +61,7 @@ func _init() -> void:
 	_test_progress_persistence()
 	_test_level_select_entries()
 	_test_results_card_flow()
+	_test_overlay_legibility()
 	_test_demo_flags()
 	_test_main_scene()
 	_test_project_settings()
@@ -536,6 +544,36 @@ func _test_results_card_flow() -> void:
 	_check(not bool(finished["next_visible"]), "the campaign finished state has no next level")
 	_check(bool(finished["select_visible"]), "the campaign finished state still offers level select")
 	card.free()
+
+
+## story-005: both overlays must leave the board readable behind them while
+## keeping the values they showed before.
+func _test_overlay_legibility() -> void:
+	var card = RESULTS_CARD_SCRIPT.new()
+	card._on_won(21, 7, 12.5, 1)
+	var solved: Dictionary = card.snapshot()
+	var card_alpha: float = solved["panel_alpha"]
+	_check(card_alpha <= MAX_PANEL_ALPHA, "the results card backdrop lets the solved board read through")
+	_check(
+		(1.0 - card_alpha) >= MIN_BOARD_VISIBILITY,
+		"the results card keeps at least half the board's brightness",
+	)
+	_check(solved["stats"] == "Moves: 21    Pushes: 7    Time: 12.5 s", "the results card still shows moves, pushes and time")
+	card.free()
+
+	var pause = PAUSE_OVERLAY_SCRIPT.new()
+	var paused: Dictionary = pause.snapshot()
+	var pause_alpha: float = paused["panel_alpha"]
+	var dim_alpha: float = paused["dim_alpha"]
+	_check(pause_alpha <= MAX_PANEL_ALPHA, "the pause panel lets the paused board read through")
+	_check(dim_alpha <= MAX_DIM_ALPHA, "the pause scrim keeps the rest of the board readable")
+	_check(
+		(1.0 - pause_alpha) * (1.0 - dim_alpha) >= MIN_BOARD_VISIBILITY,
+		"the paused board keeps at least half its brightness behind the panel",
+	)
+	_check(paused["title"] == "Paused", "the pause overlay still shows the paused title")
+	_check(paused["hint"] == "Press Esc to resume", "the pause overlay still shows the resume hint")
+	pause.free()
 
 
 func _test_demo_flags() -> void:
