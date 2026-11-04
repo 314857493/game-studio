@@ -1,7 +1,8 @@
 extends SceneTree
 
 ## Headless checks for the playable core (story-001), the finish/recover slice
-## (story-002) and the game-feel slice (story-003).
+## (story-002), the game-feel slice (story-003) and the campaign slice
+## (story-004: twelve levels, recorded solutions, unlocks and level select).
 ##
 ## Run with:
 ##   godot --headless --path . -s res://tests/run_tests.gd
@@ -14,12 +15,17 @@ const LevelLoader = preload("res://src/level_loader.gd")
 const SokobanModel = preload("res://src/sokoban_model.gd")
 const SokobanDemo = preload("res://src/sokoban_demo.gd")
 const GameFlow = preload("res://src/game_flow.gd")
+const CampaignProgress = preload("res://src/campaign_progress.gd")
 const HUD_SCRIPT = preload("res://src/hud.gd")
+const LEVEL_SELECT_SCRIPT = preload("res://src/level_select.gd")
+const RESULTS_CARD_SCRIPT = preload("res://src/results_card.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
+const LEVEL_DIR := "res://assets/data/levels/"
 const FIXTURE_DIR := "res://tests/fixtures/"
 const MAIN_SCENE_PATH := "res://scenes/main.tscn"
 const CAPTURE_SCRIPT_PATH := "res://addons/studio_capture/capture.gd"
+const PROGRESS_TEST_PATH := "user://campaign_test.json"
 
 var _passed := 0
 var _failed := 0
@@ -41,6 +47,14 @@ func _init() -> void:
 	_test_blocked_buffered()
 	_test_pause_mid_animation()
 	_test_hud_values()
+	_test_level_solution_contract()
+	_test_campaign_levels()
+	_test_level_one_board_unchanged()
+	_test_unlock_boundary()
+	_test_progress_persistence()
+	_test_level_select_entries()
+	_test_results_card_flow()
+	_test_demo_flags()
 	_test_main_scene()
 	_test_project_settings()
 
@@ -78,6 +92,7 @@ func _test_valid_level() -> void:
 			placed += 1
 	_check(placed == 0, "level-001 starts with no crate on a goal (design R2)")
 	_check(placed < level.goals.size(), "level-001 does not start solved")
+	_check(not level.solution.is_empty(), "level-001 carries a recorded solution")
 
 
 func _test_demo_pushed() -> void:
@@ -332,6 +347,246 @@ func _make_model(width: int, height: int, player: Vector2i, crates: Array = [], 
 	return model
 
 
+func _test_level_solution_contract() -> void:
+	var missing: LevelData = LevelLoader.load_level(FIXTURE_DIR + "bad-no-solution.json")
+	_check(missing != null and not missing.is_valid(), "a level without a solution is rejected")
+	_check(
+		missing != null and missing.error.to_lower().contains("solution"),
+		"the missing-solution error names the contract",
+	)
+	var bad_move: LevelData = LevelLoader.load_level(FIXTURE_DIR + "bad-solution-char.json")
+	_check(bad_move != null and not bad_move.is_valid(), "a solution with an unknown move is rejected")
+	_check(
+		bad_move != null and bad_move.error.contains("unknown move"),
+		"the bad-solution error names the move",
+	)
+
+
+func _test_campaign_levels() -> void:
+	var loaded := 0
+	for level_number in range(1, CampaignProgress.LEVEL_COUNT + 1):
+		var file: String = "level-%s.json" % str(level_number).pad_zeros(3)
+		var level: LevelData = LevelLoader.load_level(LEVEL_DIR + file)
+		_check(level != null and level.is_valid(), "%s loads and validates" % file)
+		if level == null or not level.is_valid():
+			continue
+		loaded += 1
+		_check(level.id == "level-%s" % str(level_number).pad_zeros(3), "%s keeps its id" % file)
+		_check(
+			level.width >= 5 and level.width <= 16 and level.height >= 5 and level.height <= 16,
+			"%s is inside the 5x5-16x16 range" % file,
+		)
+		_check(
+			level.crates.size() == level.goals.size() and not level.crates.is_empty(),
+			"%s has one crate per goal" % file,
+		)
+		_check(not level.solution.is_empty(), "%s carries a recorded solution" % file)
+		var placed := 0
+		for goal in level.goals:
+			if level.crates.has(goal):
+				placed += 1
+		_check(placed == 0, "%s starts with no crate on a goal (design R2)" % file)
+		var model := SokobanModel.new()
+		model.setup(level)
+		_check(not model.is_solved(), "%s does not start solved" % file)
+		var blocked := 0
+		for direction in _solution_moves(level.solution):
+			if not model.try_move(direction):
+				blocked += 1
+		_check(blocked == 0, "%s solution has no blocked move" % file)
+		_check(model.is_solved(), "%s recorded solution solves the level" % file)
+	_check(loaded == CampaignProgress.LEVEL_COUNT, "all twelve campaign level files load")
+
+
+func _test_level_one_board_unchanged() -> void:
+	var level: LevelData = LevelLoader.load_level(LEVEL_PATH)
+	if level == null or not level.is_valid():
+		_check(false, "level-001 loads for the unchanged-board check")
+		return
+	_check(level.width == 9 and level.height == 9, "level-001 keeps its 9x9 grid")
+	var board_ok: bool = level.walls.size() == 25
+	for x in level.width:
+		if not level.walls.has(Vector2i(x, 0)):
+			board_ok = false
+	for y in range(1, level.height):
+		for x in level.width:
+			var expected_side_wall: bool = x == 0 or x == level.width - 1
+			if level.walls.has(Vector2i(x, y)) != expected_side_wall:
+				board_ok = false
+	_check(board_ok, "level-001 keeps its far and side walls with the near edge open")
+	var expected_goals: Array[Vector2i] = [Vector2i(2, 2), Vector2i(6, 2), Vector2i(3, 7)]
+	var expected_crates: Array[Vector2i] = [Vector2i(4, 4), Vector2i(6, 4), Vector2i(4, 7)]
+	_check(level.goals == expected_goals, "level-001 keeps its three goals")
+	_check(level.crates == expected_crates, "level-001 keeps its three crate cells")
+	_check(level.player == Vector2i(4, 6), "level-001 keeps its player spawn")
+
+
+func _test_unlock_boundary() -> void:
+	var progress := CampaignProgress.new()
+	_check(progress.highest_unlocked == 1, "a fresh campaign starts with only level 1 unlocked")
+	_check(progress.is_unlocked(1) and not progress.is_unlocked(2), "the fresh frontier is exactly level 1")
+	_check(not progress.mark_solved(2), "a locked level cannot unlock the next")
+	_check(progress.mark_solved(1), "solving level 1 unlocks level 2")
+	_check(
+		progress.highest_unlocked == 2 and progress.is_unlocked(2) and not progress.is_unlocked(3),
+		"level 2 opens and level 3 stays locked",
+	)
+	_check(not progress.mark_solved(1), "replaying level 1 does not unlock past the frontier")
+	_check(progress.highest_unlocked == 2, "replaying level 1 keeps the frontier")
+	_check(progress.mark_solved(2), "solving level 2 unlocks level 3")
+	_check(not progress.mark_solved(1), "replaying an old level never removes an unlock")
+	_check(progress.highest_unlocked == 3, "the frontier stays at level 3")
+	progress.set_highest_unlocked(CampaignProgress.LEVEL_COUNT)
+	_check(
+		not progress.mark_solved(CampaignProgress.LEVEL_COUNT),
+		"solving the last level has no next level",
+	)
+	_check(
+		progress.highest_unlocked == CampaignProgress.LEVEL_COUNT,
+		"the last level keeps the frontier at 12",
+	)
+
+
+func _test_progress_persistence() -> void:
+	_remove_user_file(PROGRESS_TEST_PATH)
+	var progress := CampaignProgress.new()
+	progress.path = PROGRESS_TEST_PATH
+	progress.load_progress()
+	_check(progress.highest_unlocked == 1, "a missing progress file starts at level 1")
+	_check(progress.mark_solved(1), "the persistence fixture unlocks level 2")
+	_check(progress.save_progress(), "progress saves to user://")
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(PROGRESS_TEST_PATH))
+	_check(typeof(parsed) == TYPE_DICTIONARY, "the progress file is JSON")
+	if typeof(parsed) == TYPE_DICTIONARY:
+		var data: Dictionary = parsed as Dictionary
+		_check(
+			int(data.get("version", 0)) == CampaignProgress.FORMAT_VERSION,
+			"the progress file carries format version 1",
+		)
+		_check(
+			int(data.get("highest_unlocked", 0)) == 2,
+			"the progress file stores the frontier",
+		)
+	var reloaded := CampaignProgress.new()
+	reloaded.path = PROGRESS_TEST_PATH
+	reloaded.load_progress()
+	_check(reloaded.highest_unlocked == 2, "a saved frontier loads in a new session")
+	reloaded.set_highest_unlocked(9)
+	_check(reloaded.save_progress(), "a later frontier saves again")
+	var second := CampaignProgress.new()
+	second.path = PROGRESS_TEST_PATH
+	second.load_progress()
+	_check(second.highest_unlocked == 9, "the second save round-trips")
+	_write_user_file(PROGRESS_TEST_PATH, "{\"version\": 1, \"highest_unlocked\": 99}")
+	var clamped := CampaignProgress.new()
+	clamped.path = PROGRESS_TEST_PATH
+	clamped.load_progress()
+	_check(clamped.highest_unlocked == 12, "a frontier above 12 clamps to 12")
+	_write_user_file(PROGRESS_TEST_PATH, "{\"version\": 1, \"highest_unlocked\": 0}")
+	var low := CampaignProgress.new()
+	low.path = PROGRESS_TEST_PATH
+	low.load_progress()
+	_check(low.highest_unlocked == 1, "a frontier below 1 clamps to 1")
+	_write_user_file(PROGRESS_TEST_PATH, "not json")
+	var corrupt := CampaignProgress.new()
+	corrupt.path = PROGRESS_TEST_PATH
+	corrupt.load_progress()
+	_check(corrupt.highest_unlocked == 1, "a malformed progress file falls back to level 1")
+	_write_user_file(PROGRESS_TEST_PATH, "{\"version\": 99, \"highest_unlocked\": 7}")
+	var future := CampaignProgress.new()
+	future.path = PROGRESS_TEST_PATH
+	future.load_progress()
+	_check(future.highest_unlocked == 1, "an unknown progress format falls back to level 1")
+	_remove_user_file(PROGRESS_TEST_PATH)
+
+
+func _test_level_select_entries() -> void:
+	var select = LEVEL_SELECT_SCRIPT.new()
+	select.present(5)
+	_check(select.button_count() == CampaignProgress.LEVEL_COUNT, "the level select lists all twelve levels")
+	var unlocked_ok := true
+	var locked_ok := true
+	for level_number in range(1, CampaignProgress.LEVEL_COUNT + 1):
+		if level_number <= 5:
+			if select.is_locked(level_number) or not select.button_text(level_number).contains("Unlocked"):
+				unlocked_ok = false
+		else:
+			if not select.is_locked(level_number) or not select.button_text(level_number).contains("Locked"):
+				locked_ok = false
+	_check(unlocked_ok, "levels at or below the frontier show as unlocked")
+	_check(locked_ok, "levels past the frontier show as locked")
+	var chosen: Array = []
+	select.level_chosen.connect(func(level_number: int) -> void: chosen.append(level_number))
+	select._on_button_pressed(1)
+	select._on_button_pressed(CampaignProgress.LEVEL_COUNT)
+	_check(chosen == [1], "only an unlocked level can be started")
+	select.free()
+
+
+func _test_results_card_flow() -> void:
+	var card = RESULTS_CARD_SCRIPT.new()
+	card._on_won(21, 7, 12.5, 1)
+	var solved: Dictionary = card.snapshot()
+	_check(solved["title"] == "Level solved", "a solved level shows the level-solved title")
+	_check(bool(solved["next_visible"]), "a solved level offers the next level")
+	_check(bool(solved["select_visible"]), "the results card offers level select")
+	card._on_won(95, 39, 55.0, CampaignProgress.LEVEL_COUNT)
+	var finished: Dictionary = card.snapshot()
+	_check(finished["title"] == "Campaign finished", "the last level shows the campaign finished")
+	_check(not bool(finished["next_visible"]), "the campaign finished state has no next level")
+	_check(bool(finished["select_visible"]), "the campaign finished state still offers level select")
+	card.free()
+
+
+func _test_demo_flags() -> void:
+	_check(
+		SokobanDemo.parse(PackedStringArray(["--demo=select"])) == SokobanDemo.MODE_SELECT,
+		"the --demo=select flag is parsed",
+	)
+	_check(
+		SokobanDemo.parse(PackedStringArray(["--demo=win"])) == SokobanDemo.MODE_WIN,
+		"the --demo=win flag is parsed",
+	)
+	_check(
+		SokobanDemo.parse(PackedStringArray([])) == SokobanDemo.MODE_NONE,
+		"a normal run has no demo mode",
+	)
+	_check(
+		SokobanDemo.SELECT_UNLOCKED_LEVELS >= 1
+		and SokobanDemo.SELECT_UNLOCKED_LEVELS < CampaignProgress.LEVEL_COUNT,
+		"the select demo leaves later levels locked",
+	)
+
+
+func _solution_moves(solution: String) -> Array[Vector2i]:
+	var moves: Array[Vector2i] = []
+	for index in solution.length():
+		match solution[index]:
+			"U":
+				moves.append(SokobanModel.DIR_UP)
+			"D":
+				moves.append(SokobanModel.DIR_DOWN)
+			"L":
+				moves.append(SokobanModel.DIR_LEFT)
+			"R":
+				moves.append(SokobanModel.DIR_RIGHT)
+	return moves
+
+
+func _write_user_file(path: String, text: String) -> void:
+	var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
+	if file == null:
+		_check(false, "the test could write %s" % path)
+		return
+	file.store_string(text)
+	file.close()
+
+
+func _remove_user_file(path: String) -> void:
+	if FileAccess.file_exists(path):
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(path))
+
+
 func _test_main_scene() -> void:
 	_check(ResourceLoader.exists(MAIN_SCENE_PATH), "scenes/main.tscn exists")
 
@@ -350,6 +605,13 @@ func _test_main_scene() -> void:
 	_check(root.get_node_or_null("HUD") is CanvasLayer, "main scene has the HUD")
 	_check(root.get_node_or_null("PauseOverlay") is CanvasLayer, "main scene has the pause overlay")
 	_check(root.get_node_or_null("ResultsCard") is CanvasLayer, "main scene has the results card")
+	var select_node := root.get_node_or_null("LevelSelect") as CanvasLayer
+	_check(select_node != null, "main scene has the level select")
+	var select_script: Script = select_node.get_script() if select_node != null else null
+	_check(
+		select_script != null and select_script.resource_path == "res://src/level_select.gd",
+		"the level select runs src/level_select.gd",
+	)
 	root.free()
 
 
