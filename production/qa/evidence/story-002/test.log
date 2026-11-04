@@ -1,0 +1,116 @@
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . --import
+[test] project: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb
+$ /Users/jiaxingdong/.local/bin/godot --headless --path . -s res://tests/run_tests.gd
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+
+PASS: level-001 loads through the loader
+PASS: level-001 keeps its id
+PASS: level-001 is a 9x9 grid
+PASS: level-001 has three crates
+PASS: level-001 has three goals
+PASS: level-001 spawns the player on floor
+PASS: level-001 starts with no crate on a goal (design R2)
+PASS: level-001 does not start solved
+PASS: the --demo=pushed level loads
+PASS: the --demo=pushed move (1, 0) succeeds
+PASS: the --demo=pushed move (1, 0) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed move (0, -1) succeeds
+PASS: the --demo=pushed sequence leaves exactly one crate on a goal
+PASS: the demo crate lands on goal (6, 2)
+PASS: goal (2, 2) stays empty after the demo
+PASS: goal (3, 7) stays empty after the demo
+PASS: the demo player ends at (6, 3)
+ERROR: level 'bad-count': crate count 2 does not match goal count 3
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:182)
+       [1] _fail (res://src/level_loader.gd:186)
+       [2] _parse (res://src/level_loader.gd:54)
+       [3] load_level (res://src/level_loader.gd:36)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:106)
+       [5] _init (res://tests/run_tests.gd:29)
+PASS: bad-count.json is rejected
+PASS: bad-count.json error names the level id
+PASS: bad-count.json error explains the failure
+ERROR: level 'bad-no-player': no player spawn
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:182)
+       [1] _read_player (res://src/level_loader.gd:118)
+       [2] _parse (res://src/level_loader.gd:49)
+       [3] load_level (res://src/level_loader.gd:36)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:106)
+       [5] _init (res://tests/run_tests.gd:29)
+PASS: bad-no-player.json is rejected
+PASS: bad-no-player.json error names the level id
+PASS: bad-no-player.json error explains the failure
+ERROR: level 'bad-overlap': player and crate share cell (2, 2)
+   at: push_error (core/variant/variant_utility.cpp:1023)
+   GDScript backtrace (most recent call first):
+       [0] _set_error (res://src/level_loader.gd:182)
+       [1] _read_player (res://src/level_loader.gd:125)
+       [2] _parse (res://src/level_loader.gd:49)
+       [3] load_level (res://src/level_loader.gd:36)
+       [4] _test_loader_rejections (res://tests/run_tests.gd:106)
+       [5] _init (res://tests/run_tests.gd:29)
+PASS: bad-overlap.json is rejected
+PASS: bad-overlap.json error names the level id
+PASS: bad-overlap.json error explains the failure
+PASS: R4: a free move succeeds
+PASS: R4: the player moves exactly one cell right
+PASS: R4: the move counter increments and pushes stay zero
+PASS: R4: the player faces the move direction
+PASS: R4: a goal cell is walkable
+PASS: R4: the player may stand on a goal
+PASS: R5: a push succeeds when the far cell is empty
+PASS: R5: the player enters the crate's old cell
+PASS: R5: the crate moves exactly one cell
+PASS: R5: move and push counters each increment
+PASS: R6: moving into a wall is refused
+PASS: R6: a wall leaves the player cell unchanged
+PASS: R6: a wall changes no counter
+PASS: R6: a wall still turns the player
+PASS: R6: a crate pushed toward a wall is refused
+PASS: R6: a blocked push moves no cell and changes no counter
+PASS: R6: a crate pushed toward another crate is refused
+PASS: R6: a blocked crate push changes no counter
+PASS: R6: a crate pushed toward the grid edge is refused
+PASS: R6: a grid edge leaves the cell but still turns
+PASS: R7: level-001 starts unsolved
+PASS: R7: the --demo=win solve is legal
+PASS: R7: the --demo=win solve leaves every goal occupied
+PASS: R7: all three goals hold crates
+PASS: R7: the recorded solve ends at 21 moves and 7 pushes
+PASS: R8: setup move 0 succeeds
+PASS: R8: setup move 1 succeeds
+PASS: R8: setup move 2 succeeds
+PASS: R8: setup move 3 succeeds
+PASS: R8: setup move 4 succeeds
+PASS: R8: undo restores the last completed move
+PASS: R8: undo restores player, crates, counters and history depth
+PASS: R8: five moves can be undone
+PASS: R8: undoing every move restores the loaded start state
+PASS: R8: undo at the start is a no-op
+PASS: R8: the no-op undo leaves the start state unchanged
+PASS: R8: the 1000-move loop is legal
+PASS: R8: the undo history keeps at most 999 moves
+PASS: R8: undo restores the 999 retained moves
+PASS: R8: the dropped oldest entry leaves undo stopping at move 1
+PASS: R9: restart returns the loaded start state
+PASS: R9: restart clears the undo history and both counters
+PASS: scenes/main.tscn exists
+PASS: scenes/main.tscn loads as a PackedScene
+PASS: main scene root is a Node3D
+PASS: main scene root is named Main
+PASS: main scene root runs src/game.gd
+PASS: main scene has a Board
+PASS: main scene has a Camera3D
+PASS: main scene has the results card
+PASS: main scene is registered in project.godot
+PASS: StudioCapture autoload points at the capture addon
+PASS: viewport width is 1152
+PASS: viewport height is 648
+PASS: 82 checks passed
+[test] PASS

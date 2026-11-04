@@ -1,6 +1,7 @@
 extends SceneTree
 
-## Headless checks for the playable core (story-001).
+## Headless checks for the playable core (story-001) and the finish/recover
+## slice (story-002).
 ##
 ## Run with:
 ##   godot --headless --path . -s res://tests/run_tests.gd
@@ -29,6 +30,10 @@ func _init() -> void:
 	_test_free_move()
 	_test_push()
 	_test_blocked_moves()
+	_test_win_check()
+	_test_undo_fidelity()
+	_test_history_bound()
+	_test_restart()
 	_test_main_scene()
 	_test_project_settings()
 
@@ -149,6 +154,103 @@ func _test_blocked_moves() -> void:
 	_check(edge.player == Vector2i(3, 2) and edge.facing == SokobanModel.DIR_RIGHT, "R6: a grid edge leaves the cell but still turns")
 
 
+func _test_win_check() -> void:
+	var level: LevelData = LevelLoader.load_level(LEVEL_PATH)
+	if level == null or not level.is_valid():
+		_check(false, "the --demo=win level loads")
+		return
+	var model := SokobanModel.new()
+	model.setup(level)
+	_check(not model.is_solved(), "R7: level-001 starts unsolved")
+	var failures := 0
+	for direction in SokobanDemo.win_moves():
+		if not model.try_move(direction):
+			failures += 1
+	_check(failures == 0, "R7: the --demo=win solve is legal")
+	_check(model.is_solved(), "R7: the --demo=win solve leaves every goal occupied")
+	var placed := 0
+	for goal in model.goals.keys():
+		if model.crates.has(goal):
+			placed += 1
+	_check(placed == model.goals.size(), "R7: all three goals hold crates")
+	_check(model.move_count == 21 and model.push_count == 7, "R7: the recorded solve ends at 21 moves and 7 pushes")
+
+
+func _test_undo_fidelity() -> void:
+	var level: LevelData = LevelLoader.load_level(LEVEL_PATH)
+	if level == null or not level.is_valid():
+		_check(false, "the undo level loads")
+		return
+	var model := SokobanModel.new()
+	model.setup(level)
+	var expected := SokobanModel.new()
+	expected.setup(level)
+	var fresh := SokobanModel.new()
+	fresh.setup(level)
+	var moves: Array[Vector2i] = SokobanDemo.win_moves()
+	for i in 5:
+		_check(model.try_move(moves[i]), "R8: setup move %d succeeds" % i)
+		if i < 4:
+			expected.try_move(moves[i])
+	_check(model.undo(), "R8: undo restores the last completed move")
+	_check(_same_state(model, expected), "R8: undo restores player, crates, counters and history depth")
+	var undone := 1
+	while model.undo():
+		undone += 1
+	_check(undone == 5, "R8: five moves can be undone")
+	_check(_same_state(model, fresh), "R8: undoing every move restores the loaded start state")
+	_check(model.undo() == false, "R8: undo at the start is a no-op")
+	_check(_same_state(model, fresh), "R8: the no-op undo leaves the start state unchanged")
+
+
+func _test_history_bound() -> void:
+	var model := _make_model(5, 5, Vector2i(1, 1))
+	var failures := 0
+	for i in 1000:
+		var direction := SokobanModel.DIR_RIGHT if i % 2 == 0 else SokobanModel.DIR_LEFT
+		if not model.try_move(direction):
+			failures += 1
+	_check(failures == 0, "R8: the 1000-move loop is legal")
+	_check(model.history_size() == 999, "R8: the undo history keeps at most 999 moves")
+	var undone := 0
+	while model.undo():
+		undone += 1
+	_check(undone == 999, "R8: undo restores the 999 retained moves")
+	_check(model.player == Vector2i(2, 1) and model.move_count == 1, "R8: the dropped oldest entry leaves undo stopping at move 1")
+
+
+func _test_restart() -> void:
+	var level: LevelData = LevelLoader.load_level(LEVEL_PATH)
+	if level == null or not level.is_valid():
+		_check(false, "the restart level loads")
+		return
+	var model := SokobanModel.new()
+	model.setup(level)
+	var fresh := SokobanModel.new()
+	fresh.setup(level)
+	var moves: Array[Vector2i] = SokobanDemo.win_moves()
+	for i in 5:
+		model.try_move(moves[i])
+	model.setup(level)
+	_check(_same_state(model, fresh), "R9: restart returns the loaded start state")
+	_check(model.history_size() == 0 and model.move_count == 0 and model.push_count == 0, "R9: restart clears the undo history and both counters")
+
+
+func _same_state(left: SokobanModel, right: SokobanModel) -> bool:
+	if left.player != right.player:
+		return false
+	if left.move_count != right.move_count or left.push_count != right.push_count:
+		return false
+	if left.history_size() != right.history_size():
+		return false
+	if left.crates.size() != right.crates.size():
+		return false
+	for cell in left.crates.keys():
+		if not right.crates.has(cell):
+			return false
+	return true
+
+
 func _make_model(width: int, height: int, player: Vector2i, crates: Array = [], walls: Array = [], goals: Array = []) -> SokobanModel:
 	var level := LevelData.new()
 	level.id = "test"
@@ -177,7 +279,9 @@ func _test_main_scene() -> void:
 	_check(str(root.name) == "Main", "main scene root is named Main")
 	var attached := root.get_script() as Script
 	_check(attached != null and attached.resource_path == "res://src/game.gd", "main scene root runs src/game.gd")
+	_check(root.get_node_or_null("Board") is Node3D, "main scene has a Board")
 	_check(root.get_node_or_null("Camera") is Camera3D, "main scene has a Camera3D")
+	_check(root.get_node_or_null("ResultsCard") is CanvasLayer, "main scene has the results card")
 	root.free()
 
 
