@@ -18,7 +18,7 @@ The level appears as a compact diorama: pale stone floor tiles, slate wall block
 
 The loop: read the room, plan the order of pushes, execute one tile at a time, undo the wrong push as soon as it is seen, and watch the last crate click into place. The win is quiet: the sockets brighten, the results card shows moves, pushes, and time, and the next level is one confirm away. The 3D layer carries two readability promises: every crate on a goal shows a lit base ring, and every wall or crate edge that occludes a walkable tile casts a shadow that makes the blocking edge visible.
 
-Movement stays grid-native: up moves one cell north (-Z), down south (+Z), left west (-X), right east (+X), whatever the camera does. The camera is fixed during play, so the mapping never changes mid-puzzle. Because the default yaw is 45 degrees, each cardinal direction reads as a screen diagonal: north up-right, west up-left, south down-left, east down-right. A screen-aligned mapping is impossible for a square grid seen at 45 degrees, so the four corners are what players learn in their first minutes.
+Movement stays grid-native: up moves one cell north (-Z), down south (+Z), left west (-X), right east (+X), whatever the camera does. The camera is fixed during play, so the mapping never changes mid-puzzle. Because the default yaw is 30 degrees, each cardinal direction still reads as a shallow screen diagonal: north up-and-slightly-right, west up-and-slightly-left, south down-and-slightly-left, east down-and-slightly-right. A screen-aligned mapping is impossible for a square grid seen at any non-zero yaw; the smaller yaw keeps each key close enough to its screen direction that players read it without thinking.
 
 ## Rules
 
@@ -46,7 +46,7 @@ R11. **Input buffer.** At most one move is buffered while a move animation plays
 
 R12. **Level sequence.** Levels run in level-file order and unlock one at a time; solving a level unlocks the next and persists the unlock between sessions. The level-select screen only starts unlocked levels. There is no level-fail state: a stuck player always has undo and restart.
 
-R13. **Camera.** Each level defines a fixed yaw in multiples of 45 degrees (45 is the default and gives the isometric corner view), and the pitch is fixed at 55 degrees. The MVP camera does not orbit or follow the player, and gameplay never requires rotating it. Mouse input is not used for movement in the MVP.
+R13. **Camera.** Each level defines a fixed yaw in multiples of 15 degrees (30 is the default: it reads as a raised three-quarter view while keeping each key near its screen direction), and the pitch is fixed at 55 degrees. The MVP camera does not orbit or follow the player, and gameplay never requires rotating it. Mouse input is not used for movement in the MVP.
 
 ## Numbers and tuning
 
@@ -65,7 +65,7 @@ The issue fixes none of these values. They are this page's proposal for the firs
 | Undo depth | 999 | 50-999 | moves | Session model; practical infinity |
 | Undo latency | 0.1 | 0.0-0.1 | seconds | Session model; must feel instant |
 | Camera pitch | 55 | 40-70 | degrees | Camera rig; higher reads more top-down, lower keeps more wall height |
-| Camera yaw per level | 45 | any multiple of 45 | degrees | Level data; 45 is the isometric corner view, 0 faces the board head-on |
+| Camera yaw per level | 30 | any multiple of 15 | degrees | Level data; 45 is the full corner view but makes keys read diagonally, 0 faces the board head-on |
 | Camera framing margin | 1.0 | 0.5-2.0 | cells | Camera rig; keeps outer walls visible |
 | Level intro | 0.3 | 0.0-0.8 | seconds | HUD; level number before control |
 | Win effect | 1.2 | 0.5-2.0 | seconds | HUD; before the results card |
