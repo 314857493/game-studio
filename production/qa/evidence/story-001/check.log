@@ -1,4 +1,4 @@
-[check] project: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb
+[check] project: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/camera-yaw-30-ba89ce109e21
 $ /Users/jiaxingdong/.local/bin/godot --headless --path . --import
 --- output (last 16 line(s)) ---
 Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org

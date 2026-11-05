@@ -1,6 +1,6 @@
-[capture] removed stale file: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png
-[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png
+[capture] removed stale file: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/camera-yaw-30-ba89ce109e21/production/qa/evidence/story-001/story-001-1.png
+[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/camera-yaw-30-ba89ce109e21/production/qa/evidence/story-001/story-001-1.png
 [capture] user arguments: --demo=pushed
 [capture] waiting up to 60s for the PNG
-$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png --demo=pushed
-[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/sokoban-design-doc-cdb21296f0fb/production/qa/evidence/story-001/story-001-1.png (41824 bytes)
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/camera-yaw-30-ba89ce109e21/production/qa/evidence/story-001/story-001-1.png --demo=pushed
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/camera-yaw-30-ba89ce109e21/production/qa/evidence/story-001/story-001-1.png (46323 bytes)
