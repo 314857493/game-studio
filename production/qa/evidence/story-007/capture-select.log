@@ -1,0 +1,4 @@
+[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-007-controls-legend-3eb930b0a1e2/production/qa/evidence/story-007/story-007-select.png
+[capture] waiting up to 60s for the PNG
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-007-controls-legend-3eb930b0a1e2/production/qa/evidence/story-007/story-007-select.png
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-007-controls-legend-3eb930b0a1e2/production/qa/evidence/story-007/story-007-select.png (42699 bytes)

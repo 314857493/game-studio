@@ -1,0 +1,9 @@
+[run] capture argument: --studio-capture=/tmp/story007-boot.png
+[run] user arguments: --demo=pushed
+[run] launching the game window; close it to return control
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/tmp/story007-boot.png --demo=pushed
+Godot Engine v4.7.2.stable.official.ed1daf0bf - https://godotengine.org
+OpenGL API 4.1 Metal - 91.7 - Compatibility - Using Device: Apple - Apple M1 Pro
+
+studio_capture: wrote /tmp/story007-boot.png
+[run] Godot exited with code 0

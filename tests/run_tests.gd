@@ -1,8 +1,10 @@
 extends SceneTree
 
 ## Headless checks for the playable core (story-001), the finish/recover slice
-## (story-002), the game-feel slice (story-003) and the campaign slice
-## (story-004: twelve levels, recorded solutions, unlocks and level select).
+## (story-002), the game-feel slice (story-003), the campaign slice (story-004:
+## twelve levels, recorded solutions, unlocks and level select), the overlays
+## (story-005), the pause menu (story-006) and the always-visible controls legend
+## (story-007).
 ##
 ## Run with:
 ##   godot --headless --path . -s res://tests/run_tests.gd
@@ -16,10 +18,12 @@ const SokobanModel = preload("res://src/sokoban_model.gd")
 const SokobanDemo = preload("res://src/sokoban_demo.gd")
 const GameFlow = preload("res://src/game_flow.gd")
 const CampaignProgress = preload("res://src/campaign_progress.gd")
+const Controls = preload("res://src/controls.gd")
 const HUD_SCRIPT = preload("res://src/hud.gd")
 const LEVEL_SELECT_SCRIPT = preload("res://src/level_select.gd")
 const RESULTS_CARD_SCRIPT = preload("res://src/results_card.gd")
 const PAUSE_OVERLAY_SCRIPT = preload("res://src/pause_overlay.gd")
+const CONTROLS_LEGEND_SCRIPT = preload("res://src/controls_legend.gd")
 
 const LEVEL_PATH := "res://assets/data/levels/level-001.json"
 const LEVEL_DIR := "res://assets/data/levels/"
@@ -63,6 +67,7 @@ func _init() -> void:
 	_test_results_card_flow()
 	_test_overlay_legibility()
 	_test_pause_menu_buttons()
+	_test_controls_legend()
 	_test_demo_flags()
 	_test_main_scene()
 	_test_project_settings()
@@ -74,6 +79,7 @@ func _init() -> void:
 
 func _run_pause_menu_game_flow() -> void:
 	await _test_pause_menu_game_flow()
+	await _test_legend_on_both_screens()
 	await process_frame
 	await process_frame
 	_finish()
@@ -619,6 +625,48 @@ func _test_pause_menu_buttons() -> void:
 	pause.free()
 
 
+## story-007: one set of key-name constants feeds the legend, the pause menu
+## and the results card.
+func _test_controls_legend() -> void:
+	var rows: Array[String] = Controls.legend_rows()
+	_check(rows.size() == 4, "the legend names four controls")
+	_check(rows[0].ends_with(Controls.MOVE_KEYS), "the legend's move row uses the shared move keys")
+	_check(rows[1].ends_with(Controls.UNDO_KEYS), "the legend's undo row uses the shared undo keys")
+	_check(rows[2].ends_with(Controls.RESTART_KEY), "the legend's restart row uses the shared restart key")
+	_check(rows[3].ends_with(Controls.PAUSE_KEY), "the legend's pause row uses the shared pause key")
+	_check(
+		rows[0].contains("Arrow keys") and rows[0].contains("WASD"),
+		"the legend names arrow keys and WASD for movement",
+	)
+	_check(rows[1].contains("Z") and rows[1].contains("U"), "the legend names Z and U for undo")
+
+	var legend = CONTROLS_LEGEND_SCRIPT.new()
+	var state: Dictionary = legend.snapshot()
+	var text: String = state["text"]
+	_check(text == Controls.legend_text(), "the legend draws the shared legend text")
+	for key_name in [Controls.MOVE_KEYS, Controls.UNDO_KEYS, Controls.RESTART_KEY, Controls.PAUSE_KEY]:
+		_check(text.contains(key_name), "the legend names %s" % key_name)
+	_check(bool(state["visible"]), "the legend is visible as soon as it is built")
+	_check(
+		int(state["mouse_filter"]) == Control.MOUSE_FILTER_IGNORE,
+		"the legend lets clicks through to the screen behind it",
+	)
+	legend.free()
+
+	var pause = PAUSE_OVERLAY_SCRIPT.new()
+	var pause_hint: String = pause.snapshot()["hint"]
+	_check(pause_hint == Controls.pause_hint(), "the pause menu reuses the shared pause hint")
+	_check(pause_hint.contains(Controls.PAUSE_KEY), "the pause hint names the shared pause key")
+	pause.free()
+
+	var card = RESULTS_CARD_SCRIPT.new()
+	card._on_won(21, 7, 12.5, 1)
+	var card_hint: String = card.snapshot()["hint"]
+	_check(card_hint == Controls.results_solved_hint(), "the results card reuses the shared restart hint")
+	_check(card_hint.contains(Controls.RESTART_KEY), "the results hint names the shared restart key")
+	card.free()
+
+
 ## story-006: restart and level select from the pause menu use the same game
 ## paths as the keyboard, and R / Esc keep working.
 func _test_pause_menu_game_flow() -> void:
@@ -690,6 +738,47 @@ func _test_pause_menu_game_flow() -> void:
 		and not bool(overlay.snapshot()["visible"]),
 		"R still restarts from the paused state",
 	)
+	game.queue_free()
+
+
+## story-007: the legend is on the level select, and it stays on screen when a
+## level starts and while the game is paused.
+func _test_legend_on_both_screens() -> void:
+	var packed := load(MAIN_SCENE_PATH) as PackedScene
+	if packed == null:
+		_check(false, "the legend scene loads")
+		return
+	var game: Node = packed.instantiate()
+	root.add_child(game)
+	var legend := game.get_node_or_null("ControlsLegend") as CanvasLayer
+	var select := game.get_node_or_null("LevelSelect") as CanvasLayer
+	_check(legend != null, "the main scene carries the controls legend")
+	if legend == null or select == null:
+		game.queue_free()
+		return
+	_check(legend.visible, "the controls legend is visible on the level select")
+	_check(select.visible, "the game opens on the level select")
+	_check(
+		legend.layer > select.layer,
+		"the legend draws above the level-select backdrop",
+	)
+	var pause := game.get_node_or_null("PauseOverlay") as CanvasLayer
+	_check(
+		pause != null and legend.layer > pause.layer,
+		"the legend draws above the pause scrim",
+	)
+	var text: String = legend.snapshot()["text"]
+	for key_name in [Controls.MOVE_KEYS, Controls.UNDO_KEYS, Controls.RESTART_KEY, Controls.PAUSE_KEY]:
+		_check(text.contains(key_name), "the level-select legend names %s" % key_name)
+	game._start_level(1)
+	_check(
+		legend.visible and not select.visible,
+		"the legend stays on screen when a level starts",
+	)
+	_check(bool(legend.snapshot()["visible"]), "the legend is still drawn during play")
+	game._set_paused(true)
+	_check(game._flow.is_paused() and legend.visible, "the legend stays readable while paused")
+	game._set_paused(false)
 	game.queue_free()
 
 
