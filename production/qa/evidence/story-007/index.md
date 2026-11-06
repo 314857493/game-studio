@@ -8,6 +8,6 @@ Run result: OBSERVED — in the 1152x648 `--demo=pushed` frame the controls bar 
 - `check.log` — `python scripts/studio.py check`: exit 0, `[check] import OK`, `[check] ok` for `res://src/pause_overlay.gd`, `res://src/results_card.gd`, `res://tests/run_tests.gd`, `res://src/controls.gd` and `res://src/controls_legend.gd`, then `[check] parsed 5 changed script(s)`.
 - `test.log` — `python scripts/studio.py test`: exit 0, `PASS: 323 checks passed`. The new story-007 checks assert the four legend rows and their shared key names, the pause hint built from `PAUSE_KEY`, the results hint built from `RESTART_KEY`, and that the main scene keeps the legend visible on the level select, after a level starts, and while paused, with its CanvasLayer above the level-select backdrop and the pause scrim.
 - `run.log` — `python scripts/studio.py run --capture /tmp/story007-boot.png -- --demo=pushed`: exit 0, the game window booted on the pushed demo, `studio_capture: wrote /tmp/story007-boot.png`, `[run] Godot exited with code 0`, and the log carries no script errors.
-- `capture-pushed.log` — the `--demo=pushed` capture command: exit 0, a 1152x648 PNG of 56795 bytes.
-- `capture-select.log` — the plain-launch capture command: exit 0, a 1152x648 PNG of 42699 bytes.
-- `capture-paused.log` — the `--demo=pause` capture command: exit 0, a 1152x648 PNG of 66797 bytes.
+- `capture-pushed.log` — `python scripts/studio.py capture --out production/qa/evidence/story-007/story-007-pushed.png -- --demo=pushed`: exit 0, a 1152x648 PNG of 56795 bytes.
+- `capture-select.log` — `python scripts/studio.py capture --out production/qa/evidence/story-007/story-007-select.png`: exit 0, a 1152x648 PNG of 42699 bytes.
+- `capture-paused.log` — `python scripts/studio.py capture --out production/qa/evidence/story-007/story-007-paused.png -- --demo=pause`: exit 0, a 1152x648 PNG of 66797 bytes.
