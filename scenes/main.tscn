@@ -44,3 +44,6 @@ script = ExtResource("5_select")
 [connection signal="level_chosen" from="LevelSelect" to="." method="_on_level_chosen"]
 [connection signal="next_level_requested" from="ResultsCard" to="." method="_on_next_level_requested"]
 [connection signal="level_select_requested" from="ResultsCard" to="." method="_on_level_select_requested"]
+[connection signal="restart_requested" from="PauseOverlay" to="." method="_on_pause_restart_requested"]
+[connection signal="resume_requested" from="PauseOverlay" to="." method="_on_pause_resume_requested"]
+[connection signal="level_select_requested" from="PauseOverlay" to="." method="_on_pause_level_select_requested"]
