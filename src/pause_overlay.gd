@@ -7,8 +7,9 @@ signal restart_requested()
 signal resume_requested()
 signal level_select_requested()
 
+const Controls = preload("res://src/controls.gd")
+
 const TITLE_TEXT := "Paused"
-const HINT_TEXT := "Press Esc to resume"
 const RESTART_TEXT := "Restart level"
 const RESUME_TEXT := "Resume"
 const LEVEL_SELECT_TEXT := "Level select"
@@ -101,7 +102,7 @@ func _build_overlay() -> void:
 	box.add_child(_title)
 	box.add_child(_make_buttons())
 	_hint = _make_label(HINT_FONT_SIZE)
-	_hint.text = HINT_TEXT
+	_hint.text = Controls.pause_hint()
 	box.add_child(_hint)
 
 

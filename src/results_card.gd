@@ -10,11 +10,11 @@ signal next_level_requested()
 signal level_select_requested()
 
 const CampaignProgress = preload("res://src/campaign_progress.gd")
+const Controls = preload("res://src/controls.gd")
 
 const SOLVED_TITLE := "Level solved"
 const FINISHED_TITLE := "Campaign finished"
 const STATS_FORMAT := "Moves: %d    Pushes: %d    Time: %.1f s"
-const SOLVED_HINT := "R restarts · Enter starts the next level"
 const FINISHED_HINT := "All 12 levels solved · choose a level to replay"
 const NEXT_TEXT := "Next level"
 const SELECT_TEXT := "Level select"
@@ -57,7 +57,7 @@ func _on_won(moves: int, pushes: int, seconds: float, level_number: int) -> void
 	_stats.text = STATS_FORMAT % [moves, pushes, seconds]
 	var finished: bool = level_number >= CampaignProgress.LEVEL_COUNT
 	_title.text = FINISHED_TITLE if finished else SOLVED_TITLE
-	_hint.text = FINISHED_HINT if finished else SOLVED_HINT
+	_hint.text = FINISHED_HINT if finished else Controls.results_solved_hint()
 	_next_button.visible = not finished
 	_overlay.visible = true
 	if is_inside_tree():
@@ -127,7 +127,7 @@ func _ensure_built() -> void:
 	box.add_child(_hint)
 	box.add_child(_make_buttons())
 	_title.text = SOLVED_TITLE
-	_hint.text = SOLVED_HINT
+	_hint.text = Controls.results_solved_hint()
 
 
 func _make_buttons() -> HBoxContainer:

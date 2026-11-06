@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://src/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://src/hud.gd" id="2_hud"]
 [ext_resource type="Script" path="res://src/pause_overlay.gd" id="3_pause"]
 [ext_resource type="Script" path="res://src/results_card.gd" id="4_results"]
 [ext_resource type="Script" path="res://src/level_select.gd" id="5_select"]
+[ext_resource type="Script" path="res://src/controls_legend.gd" id="6_legend"]
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_game")
@@ -33,6 +34,10 @@ script = ExtResource("4_results")
 [node name="LevelSelect" type="CanvasLayer" parent="."]
 layer = 50
 script = ExtResource("5_select")
+
+[node name="ControlsLegend" type="CanvasLayer" parent="."]
+layer = 60
+script = ExtResource("6_legend")
 
 [connection signal="won" from="." to="ResultsCard" method="_on_won"]
 [connection signal="restarted" from="." to="ResultsCard" method="_on_restarted"]

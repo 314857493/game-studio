@@ -1,6 +1,6 @@
 ---
 id: story-007
-status: ready
+status: done
 updated: 2026-11-06
 ---
 
@@ -15,18 +15,18 @@ exists. This story puts the controls on screen.
 
 ## Acceptance
 
-- [ ] **Legend during play.** A controls legend is visible for the whole session, naming each
+- [x] **Legend during play.** A controls legend is visible for the whole session, naming each
       action with its keys: move and push (arrow keys or `WASD`), undo (`Z` or `U`), restart
       (`R`), pause (`Esc`).
-- [ ] **Legend on the level select.** The same legend is on the level-select screen, so a new
+- [x] **Legend on the level select.** The same legend is on the level-select screen, so a new
       player learns the controls before the first move.
-- [ ] **It stays out of the way.** The legend is legible against the scene, never overlaps the
+- [x] **It stays out of the way.** The legend is legible against the scene, never overlaps the
       level / moves / pushes counters or the board, and stays readable while paused.
-- [ ] **One source of truth.** The key names come from one set of constants that the pause menu
+- [x] **One source of truth.** The key names come from one set of constants that the pause menu
       and results card reuse, so a rebind or a wording change cannot leave the screens disagreeing.
-- [ ] **Evidence frames.** `capture_command` with `-- --demo=pushed` shows the legend while
+- [x] **Evidence frames.** `capture_command` with `-- --demo=pushed` shows the legend while
       playing, and a plain launch capture shows it on the level select.
-- [ ] `python scripts/studio.py check` and `python scripts/studio.py test` exit 0, with a test
+- [x] `python scripts/studio.py check` and `python scripts/studio.py test` exit 0, with a test
       asserting the legend text and that it is present on both screens.
 
 ## Out of scope
@@ -37,4 +37,7 @@ exists. This story puts the controls on screen.
 
 ## Evidence
 
-- `production/qa/evidence/story-007/index.md`
+- `production/qa/evidence/story-007/index.md` — Run result: OBSERVED.
+- `production/qa/evidence/story-007/story-007-pushed.png` — the legend during play (`--demo=pushed`).
+- `production/qa/evidence/story-007/story-007-select.png` — the same legend on the level select (plain launch).
+- `production/qa/evidence/story-007/story-007-paused.png` — the legend still readable while paused.
