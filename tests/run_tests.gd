@@ -73,7 +73,7 @@ func _init() -> void:
 
 
 func _run_pause_menu_game_flow() -> void:
-	_test_pause_menu_game_flow()
+	await _test_pause_menu_game_flow()
 	await process_frame
 	await process_frame
 	_finish()
@@ -671,19 +671,19 @@ func _test_pause_menu_game_flow() -> void:
 	_check(game._select_open and select.visible, "level select from the pause menu opens the level select")
 
 	game._start_level(1)
-	game._unhandled_input(_make_key_event(KEY_ESCAPE))
+	await _press_key(game, KEY_ESCAPE)
 	_check(game._flow.is_paused(), "Esc still opens the pause overlay")
-	game._unhandled_input(_make_key_event(KEY_ESCAPE))
+	await _press_key(game, KEY_ESCAPE)
 	_check(not game._flow.is_paused(), "Esc still closes the pause overlay")
 	game._apply_demo(SokobanDemo.pause_moves())
-	game._unhandled_input(_make_key_event(KEY_R))
+	await _press_key(game, KEY_R)
 	_check(
 		game._model.move_count == 0 and not game._flow.is_paused(),
 		"R still restarts while playing",
 	)
 	game._apply_demo(SokobanDemo.pause_moves())
 	game._set_paused(true)
-	game._unhandled_input(_make_key_event(KEY_R))
+	await _press_key(game, KEY_R)
 	_check(
 		game._model.move_count == 0
 		and not game._flow.is_paused()
@@ -698,6 +698,13 @@ func _make_key_event(keycode: int) -> InputEventKey:
 	event.physical_keycode = keycode
 	event.pressed = true
 	return event
+
+
+## Sends one key press through the viewport, so the check covers the real GUI
+## focus path instead of calling the game's input handler directly.
+func _press_key(game: Node, keycode: int) -> void:
+	game.get_viewport().push_input(_make_key_event(keycode))
+	await process_frame
 
 
 func _test_demo_flags() -> void:
