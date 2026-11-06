@@ -145,6 +145,8 @@ func _unhandled_input(event: InputEvent) -> void:
 		_set_paused(not _flow.is_paused())
 		return
 	if _flow.is_paused():
+		if event.is_action_pressed(ACTION_RESTART):
+			_restart()
 		return
 	if _won:
 		if event.is_action_pressed(ACTION_RESTART):
@@ -354,6 +356,22 @@ func _on_next_level_requested() -> void:
 
 
 func _on_level_select_requested() -> void:
+	_open_level_select()
+
+
+## R9: the pause menu's Restart level does exactly what the R key does.
+func _on_pause_restart_requested() -> void:
+	_restart()
+
+
+func _on_pause_resume_requested() -> void:
+	_set_paused(false)
+
+
+## Level select leaves the level, so the pause state ends before the screen opens.
+func _on_pause_level_select_requested() -> void:
+	if _flow != null and _flow.is_paused():
+		_set_paused(false)
 	_open_level_select()
 
 

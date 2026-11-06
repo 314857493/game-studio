@@ -1,0 +1,5 @@
+[capture] target: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-006-pause-menu-ed6ef9adecd5/production/qa/evidence/story-006/story-006-pause.png
+[capture] user arguments: --demo=pause
+[capture] waiting up to 60s for the PNG
+$ /Users/jiaxingdong/.local/bin/godot --path . -- --studio-capture=/Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-006-pause-menu-ed6ef9adecd5/production/qa/evidence/story-006/story-006-pause.png --demo=pause
+[capture] OK: /Users/jiaxingdong/.dsh-desktop/state/superagent/work/story-006-pause-menu-ed6ef9adecd5/production/qa/evidence/story-006/story-006-pause.png (57145 bytes)

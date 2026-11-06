@@ -1,6 +1,6 @@
 ---
 id: story-006
-status: ready
+status: done
 updated: 2026-11-06
 ---
 
@@ -16,19 +16,19 @@ those controls.
 
 ## Acceptance
 
-- [ ] **Buttons.** The pause overlay offers **Restart level** and **Resume**, plus **Level
+- [x] **Buttons.** The pause overlay offers **Restart level** and **Resume**, plus **Level
       select** to leave the level. Each is clickable with the mouse and reachable by
       keyboard focus, and none of them breaks the existing `Esc` toggle.
-- [ ] **Restart from pause.** Choosing Restart level does exactly what `R` does: board back
+- [x] **Restart from pause.** Choosing Restart level does exactly what `R` does: board back
       to the start, move and push counters reset, undo history cleared — and the game leaves
       the pause state, so the player is playing again rather than staring at an overlay.
-- [ ] **Keyboard still works.** `R` restarts from both playing and paused, and `Esc` still
+- [x] **Keyboard still works.** `R` restarts from both playing and paused, and `Esc` still
       opens and closes the pause overlay.
-- [ ] **Legibility holds.** The overlay keeps the story-005 rule: the board stays readable
+- [x] **Legibility holds.** The overlay keeps the story-005 rule: the board stays readable
       behind it, and the tests that assert panel and scrim alpha still pass.
-- [ ] **Evidence frame.** `capture_command` with `-- --demo=pause` captures the overlay with
+- [x] **Evidence frame.** `capture_command` with `-- --demo=pause` captures the overlay with
       the three buttons visible and the board readable behind them.
-- [ ] `python scripts/studio.py check` and `python scripts/studio.py test` exit 0, with a
+- [x] `python scripts/studio.py check` and `python scripts/studio.py test` exit 0, with a
       test covering restart-from-pause (board, counters, history and pause state) and
       level-select-from-pause.
 

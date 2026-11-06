@@ -62,10 +62,24 @@ func _init() -> void:
 	_test_level_select_entries()
 	_test_results_card_flow()
 	_test_overlay_legibility()
+	_test_pause_menu_buttons()
 	_test_demo_flags()
 	_test_main_scene()
 	_test_project_settings()
 
+	# The scene test builds and frees the 3D board, so it runs after the first
+	# frame; freeing renderer objects during _init leaks their RIDs at exit.
+	_run_pause_menu_game_flow.call_deferred()
+
+
+func _run_pause_menu_game_flow() -> void:
+	await _test_pause_menu_game_flow()
+	await process_frame
+	await process_frame
+	_finish()
+
+
+func _finish() -> void:
 	if _failed == 0:
 		print("PASS: %d checks passed" % _passed)
 		quit(0)
@@ -574,6 +588,123 @@ func _test_overlay_legibility() -> void:
 	_check(paused["title"] == "Paused", "the pause overlay still shows the paused title")
 	_check(paused["hint"] == "Press Esc to resume", "the pause overlay still shows the resume hint")
 	pause.free()
+
+
+## story-006: the pause menu offers restart, resume and level select, and each
+## button is keyboard-focusable and reports its intent.
+func _test_pause_menu_buttons() -> void:
+	var pause = PAUSE_OVERLAY_SCRIPT.new()
+	var intents: Dictionary = {"restart": 0, "resume": 0, "select": 0}
+	pause.restart_requested.connect(func() -> void: intents["restart"] += 1)
+	pause.resume_requested.connect(func() -> void: intents["resume"] += 1)
+	pause.level_select_requested.connect(func() -> void: intents["select"] += 1)
+	var state: Dictionary = pause.snapshot()
+	_check(state["restart"] == "Restart level", "the pause menu offers Restart level")
+	_check(state["resume"] == "Resume", "the pause menu offers Resume")
+	_check(state["level_select"] == "Level select", "the pause menu offers Level select")
+	_check(
+		float(state["min_button_height"]) >= 44.0,
+		"pause menu buttons meet the 44 px target",
+	)
+	_check(
+		state["focus_modes"] == [Control.FOCUS_ALL, Control.FOCUS_ALL, Control.FOCUS_ALL],
+		"pause menu buttons are keyboard focusable",
+	)
+	pause._on_restart_pressed()
+	pause._on_resume_pressed()
+	pause._on_level_select_pressed()
+	_check(intents["restart"] == 1, "the pause restart button emits restart")
+	_check(intents["resume"] == 1, "the pause resume button emits resume")
+	_check(intents["select"] == 1, "the pause level select button emits level select")
+	pause.free()
+
+
+## story-006: restart and level select from the pause menu use the same game
+## paths as the keyboard, and R / Esc keep working.
+func _test_pause_menu_game_flow() -> void:
+	var packed := load(MAIN_SCENE_PATH) as PackedScene
+	if packed == null:
+		_check(false, "the pause-menu scene loads")
+		return
+	var game: Node = packed.instantiate()
+	root.add_child(game)
+	var overlay: CanvasLayer = game.get_node("PauseOverlay")
+	var select: CanvasLayer = game.get_node("LevelSelect")
+	game._start_level(1)
+	var start_player: Vector2i = game._model.player
+	game._apply_demo(SokobanDemo.pause_moves())
+	_check(
+		game._model.move_count == 3
+		and game._model.push_count == 1
+		and game._model.history_size() == 3,
+		"the pause-menu fixture reaches a moved board",
+	)
+	game._set_paused(true)
+	_check(
+		game._flow.is_paused() and bool(overlay.snapshot()["visible"]),
+		"the pause menu opens over the paused board",
+	)
+	_check(overlay._resume_button.has_focus(), "the pause menu focuses a button when it opens")
+	overlay._on_restart_pressed()
+	_check(
+		game._model.player == start_player
+		and game._model.move_count == 0
+		and game._model.push_count == 0,
+		"restart from the pause menu resets the board and both counters",
+	)
+	_check(
+		game._model.history_size() == 0,
+		"restart from the pause menu clears the undo history",
+	)
+	_check(
+		not game._flow.is_paused() and not bool(overlay.snapshot()["visible"]),
+		"restart from the pause menu leaves the pause state",
+	)
+
+	game._apply_demo(SokobanDemo.pause_moves())
+	game._set_paused(true)
+	overlay._on_level_select_pressed()
+	_check(
+		not game._flow.is_paused() and not bool(overlay.snapshot()["visible"]),
+		"level select from the pause menu leaves the pause state",
+	)
+	_check(game._select_open and select.visible, "level select from the pause menu opens the level select")
+
+	game._start_level(1)
+	await _press_key(game, KEY_ESCAPE)
+	_check(game._flow.is_paused(), "Esc still opens the pause overlay")
+	await _press_key(game, KEY_ESCAPE)
+	_check(not game._flow.is_paused(), "Esc still closes the pause overlay")
+	game._apply_demo(SokobanDemo.pause_moves())
+	await _press_key(game, KEY_R)
+	_check(
+		game._model.move_count == 0 and not game._flow.is_paused(),
+		"R still restarts while playing",
+	)
+	game._apply_demo(SokobanDemo.pause_moves())
+	game._set_paused(true)
+	await _press_key(game, KEY_R)
+	_check(
+		game._model.move_count == 0
+		and not game._flow.is_paused()
+		and not bool(overlay.snapshot()["visible"]),
+		"R still restarts from the paused state",
+	)
+	game.queue_free()
+
+
+func _make_key_event(keycode: int) -> InputEventKey:
+	var event := InputEventKey.new()
+	event.physical_keycode = keycode
+	event.pressed = true
+	return event
+
+
+## Sends one key press through the viewport, so the check covers the real GUI
+## focus path instead of calling the game's input handler directly.
+func _press_key(game: Node, keycode: int) -> void:
+	game.get_viewport().push_input(_make_key_event(keycode))
+	await process_frame
 
 
 func _test_demo_flags() -> void:
